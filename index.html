@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Gandxo Analytics Pro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; 
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); 
+        color: #f1f5f9; 
+        min-height: 100vh; 
+    }
+    
+    .container { padding: 20px; max-width: 1200px; margin: auto; }
+    
+    /* Header */
+    .header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        padding: 20px 0; 
+        border-bottom: 1px solid #334155; 
+        margin-bottom: 30px; 
+    }
+    .logo { 
+        font-size: 24px; 
+        font-weight: 800; 
+        background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%); 
+        -webkit-background-clip: text; 
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    h2, h3 { margin-top: 0; color: #fff; }
+    
+    /* Notifications */
+    .notification { 
+        position: fixed; 
+        top: 20px; 
+        right: 20px; 
+        padding: 16px 24px; 
+        border-radius: 12px; 
+        color: #fff; 
+        z-index: 9999; 
+        animation: slideIn 0.3s ease; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+        max-width: 350px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    .notification.success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+    .notification.error { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+    .notification.info { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+    @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOut { to { transform: translateX(400px); opacity: 0; } }
+    
+    /* Loader */
+    .loader { 
+        border: 3px solid rgba(56, 189, 248, 0.2); 
+        border-top-color: #38bdf8; 
+        border-radius: 50%; 
+        width: 40px; 
+        height: 40px; 
+        animation: spin 1s linear infinite; 
+        margin: 40px auto; 
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    /* Form Elements */
+    input, button, select { 
+        width: 100%; 
+        padding: 14px 16px; 
+        margin: 8px 0; 
+        border-radius: 10px; 
+        border: 1px solid #334155; 
+        background: #1e293b; 
+        color: #fff; 
+        font-size: 15px;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+    input:focus, select:focus { 
+        outline: none; 
+        border-color: #38bdf8; 
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+    }
+    input::placeholder { color: #64748b; }
+    
+    /* Buttons */
+    button { 
+        font-weight: 600; 
+        cursor: pointer; 
+        transition: all 0.2s;
+        border: none;
+    }
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .btn-primary { 
+        background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); 
+        color: #0f172a; 
+        box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+    }
+    .btn-primary:hover:not(:disabled) { 
+        transform: translateY(-2px); 
+        box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+    }
+    .btn-danger { 
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); 
+        color: #fff; 
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    .btn-danger:hover:not(:disabled) { 
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    }
+    .btn-outline { 
+        background: transparent; 
+        border: 1px solid #475569;
+        color: #cbd5e1;
+    }
+    .btn-outline:hover:not(:disabled) { 
+        background: #334155; 
+        border-color: #64748b;
+    }
+    .btn-small {
+        width: auto;
+        padding: 8px 16px;
+        font-size: 13px;
+        margin: 0;
+    }
+
+    /* Cards */
+    .card { 
+        border: 1px solid #334155; 
+        border-radius: 16px; 
+        padding: 24px; 
+        margin-top: 24px; 
+        background: rgba(30, 41, 59, 0.6); 
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s;
+    }
+    .card:hover {
+        box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    .stat-card {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(129, 140, 248, 0.1) 100%);
+        border: 1px solid rgba(56, 189, 248, 0.2);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+    }
+    .stat-value {
+        font-size: 32px;
+        font-weight: 800;
+        color: #38bdf8;
+        margin: 10px 0;
+    }
+    .stat-label {
+        font-size: 13px;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    
+    /* Code Block */
+    .code { 
+        font-family: 'Courier New', monospace; 
+        font-size: 13px; 
+        background: #0f172a; 
+        padding: 16px; 
+        padding-right: 90px;
+        border-radius: 8px; 
+        border: 1px solid #334155; 
+        white-space: pre-wrap; 
+        word-break: break-all; 
+        color: #a5f3fc;
+        position: relative;
+    }
+    .copy-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        padding: 6px 12px;
+        background: #38bdf8;
+        color: #000;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        width: auto;
+        margin: 0;
+    }
+    .copy-btn:hover {
+        background: #0ea5e9;
+    }
+    .hidden { display: none !important; }
+    .small { font-size: 13px; color: #94a3b8; margin-bottom: 8px; }
+    
+    /* Charts */
+    .flex-charts { 
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px; 
+        margin-top: 20px; 
+    }
+    .chart-box { 
+        height: 250px; 
+        position: relative; 
+        background: rgba(15, 23, 42, 0.5); 
+        border-radius: 12px; 
+        padding: 16px;
+        border: 1px solid #334155;
+    }
+    .full-width { 
+        width: 100%; 
+        height: 300px;
+        grid-column: 1 / -1;
+    }
+
+    /* Pro Badge */
+    .badge-pro { 
+        background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%); 
+        color: #000; 
+        padding: 4px 10px; 
+        border-radius: 6px; 
+        font-size: 11px; 
+        font-weight: 800; 
+        vertical-align: middle;
+        box-shadow: 0 2px 8px rgba(250, 204, 21, 0.3);
+    }
+    
+    /* Pro Section */
+    #proSection { 
+        border: 2px solid #facc15; 
+        background: linear-gradient(135deg, rgba(250, 204, 21, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #64748b;
+    }
+    .empty-state svg {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+    
+    /* Tabs */
+    .tabs {
+        display: flex;
+        gap: 8px;
+        border-bottom: 1px solid #334155;
+        margin-bottom: 20px;
+    }
+    .tab {
+        padding: 12px 24px;
+        background: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: #94a3b8;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+        width: auto;
+        margin: 0;
+    }
+    .tab.active {
+        color: #38bdf8;
+        border-bottom-color: #38bdf8;
+    }
+    .tab:hover {
+        color: #cbd5e1;
+    }
+    
+    /* Modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .modal-content {
+        max-width: 500px;
+        width: 100%;
+    }
+    
+    /* Top Pages */
+    .page-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #334155;
+    }
+    .page-item:last-child {
+        border-bottom: none;
+    }
+    .page-url {
+        color: #cbd5e1;
+        font-size: 13px;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-right: 12px;
+    }
+    .page-count {
+        color: #38bdf8;
+        font-weight: 700;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .container { padding: 12px; }
+        .header { 
+            flex-direction: column; 
+            gap: 16px; 
+            text-align: center; 
+        }
+        .stats-grid { 
+            grid-template-columns: 1fr; 
+        }
+        .flex-charts {
+            grid-template-columns: 1fr;
+        }
+        .logo {
+            font-size: 20px;
+        }
+        .stat-value {
+            font-size: 24px;
+        }
+        .code {
+            font-size: 11px;
+            padding-right: 16px;
+        }
+        .copy-btn {
+            position: relative;
+            display: block;
+            margin-top: 10px;
+            width: 100%;
+        }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- Auth Section -->
+<div id="auth">
+  <div class="header" style="border: none; justify-content: center;">
+    <div class="logo">📊 Gandxo Analytics</div>
+  </div>
+  
+  <div class="card" style="max-width: 450px; margin: 60px auto;">
+    <h2 style="text-align: center; margin-bottom: 8px;">Bienvenue</h2>
+    <p class="small" style="text-align: center; margin-bottom: 24px;">Analysez le trafic de vos sites en temps réel</p>
+    
+    <input id="email" type="email" placeholder="adresse@email.com" autocomplete="email">
+    <input id="password" type="password" placeholder="Mot de passe (min 6 caractères)" autocomplete="current-password">
+    
+    <button class="btn-primary" onclick="handleLogin()">Se connecter</button>
+    <button class="btn-outline" onclick="handleRegister()">Créer un compte</button>
+    
+    <p class="small" style="text-align: center; margin-top: 20px; margin-bottom: 0;">
+      🔒 Vos données sont sécurisées et cryptées
+    </p>
+  </div>
+</div>
+
+<!-- Dashboard Section -->
+<div id="dashboard" class="hidden">
+  <div class="header">
+    <div class="logo">📊 Gandxo Analytics</div>
+    <button onclick="handleLogout()" class="btn-outline btn-small">Déconnexion</button>
+  </div>
+  
+  <!-- Stats Overview -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Plan actuel</div>
+      <div class="stat-value" id="planDisplay" style="font-size: 24px;">FREE</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sites actifs</div>
+      <div class="stat-value" id="sitesCount">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Visites totales</div>
+      <div class="stat-value" id="totalVisits">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Aujourd'hui</div>
+      <div class="stat-value" id="todayVisits">0</div>
+    </div>
+  </div>
+
+  <!-- Add Site Section -->
+  <div class="card">
+    <h3>➕ Ajouter un nouveau site</h3>
+    <p class="small">Entrez le domaine de votre site (ex: monsite.com ou www.monsite.fr)</p>
+    <input id="domain" placeholder="monsite.com" type="text">
+    <button class="btn-primary" onclick="handleCreateSite()">Ajouter le site</button>
+  </div>
+
+  <!-- Sites List -->
+  <div class="tabs">
+    <button class="tab active" onclick="filterSites('all', event)">Tous les sites</button>
+    <button class="tab" onclick="filterSites('recent', event)">Récents</button>
+  </div>
+  
+  <div id="sites"></div>
+
+  <!-- Pro Upgrade Section -->
+  <div id="proSection" class="hidden card">
+    <h3 style="color:#facc15;">🚀 Passez au plan Pro</h3>
+    <p class="small" style="color: #cbd5e1;">
+      Débloquez jusqu'à 10 sites, statistiques avancées et support prioritaire.
+    </p>
+    <div style="margin: 20px 0;">
+      <div style="font-size: 36px; font-weight: 800; color: #facc15;">5000 FCFA<span style="font-size: 16px; color: #94a3b8;">/mois</span></div>
+    </div>
+    <button class="btn-primary" style="background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%); color: #000;" onclick="showPaymentModal()">Souscrire maintenant</button>
+  </div>
+</div>
+
+<!-- Payment Modal -->
+<div id="paymentModal" class="hidden modal-overlay">
+  <div class="card modal-content">
+    <h3>💳 Paiement MTN Mobile Money</h3>
+    <p class="small">Entrez votre numéro MTN pour finaliser le paiement</p>
+    
+    <input id="phoneNumber" type="tel" placeholder="+242 06 XXX XX XX" maxlength="15">
+    
+    <div style="display: flex; gap: 12px; margin-top: 20px;">
+      <button class="btn-primary" onclick="processPro()" style="flex: 1;">Payer 5000 FCFA</button>
+      <button class="btn-outline" onclick="closePaymentModal()" style="flex: 1;">Annuler</button>
+    </div>
+    
+    <p class="small" style="text-align: center; margin-top: 20px; margin-bottom: 0;">
+      🔒 Paiement sécurisé via MTN Mobile Money
+    </p>
+  </div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, setDoc, getDoc, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDHCqPBzhWNnXuBrLvfa4NqCFeOdIRy6UI",
+  authDomain: "gandxo-analytics.firebaseapp.com",
+  projectId: "gandxo-analytics",
+  storageBucket: "gandxo-analytics.firebasestorage.app",
+  messagingSenderId: "660347922907",
+  appId: "1:660347922907:web:652a37718edae658561ffe",
+  measurementId: "G-TRZ202P4SQ"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth();
+const db = getFirestore();
+
+const authDiv = document.getElementById("auth");
+const dashDiv = document.getElementById("dashboard");
+const sitesDiv = document.getElementById("sites");
+const proSection = document.getElementById("proSection");
+
+let sitesCache = [];
+let chartsCache = {};
+let currentFilter = 'all';
+
+function showNotification(message, type = 'info') {
+  const notif = document.createElement('div');
+  notif.className = 'notification ' + type;
+  notif.textContent = message;
+  document.body.appendChild(notif);
+  
+  setTimeout(function() {
+    notif.style.animation = 'slideOut 0.3s ease';
+    setTimeout(function() { notif.remove(); }, 300);
+  }, 3000);
+}
+
+window.handleRegister = async function() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  
+  if (!email || !password) {
+    return showNotification("Veuillez remplir tous les champs", 'error');
+  }
+  
+  if (password.length < 6) {
+    return showNotification("Le mot de passe doit contenir au moins 6 caractères", 'error');
+  }
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return showNotification("Adresse email invalide", 'error');
+  }
+  
+  try {
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+    await setDoc(doc(db, "users", res.user.uid), {
+      plan: "free",
+      sitesLimit: 1,
+      createdAt: Date.now(),
+      email: email
+    });
+    showNotification("Compte créé avec succès ! 🎉", 'success');
+  } catch (e) {
+    if (e.code === 'auth/email-already-in-use') {
+      showNotification("Cette adresse email est déjà utilisée", 'error');
+    } else {
+      showNotification("Erreur: " + e.message, 'error');
+    }
+  }
+};
+
+window.handleLogin = async function() {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  
+  if (!email || !password) {
+    return showNotification("Veuillez remplir tous les champs", 'error');
+  }
+  
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    showNotification("Connexion réussie ! 👋", 'success');
+  } catch (e) {
+    if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
+      showNotification("Email ou mot de passe incorrect", 'error');
+    } else {
+      showNotification("Erreur de connexion: " + e.message, 'error');
+    }
+  }
+};
+
+window.handleLogout = async function() {
+  try {
+    await signOut(auth);
+    showNotification("Déconnexion réussie", 'info');
+    sitesCache = [];
+    chartsCache = {};
+  } catch (e) {
+    showNotification("Erreur lors de la déconnexion", 'error');
+  }
+};
+
+onAuthStateChanged(auth, async function(user) {
+  if (!user) {
+    authDiv.classList.remove("hidden");
+    dashDiv.classList.add("hidden");
+    return;
+  }
+  
+  authDiv.classList.add("hidden");
+  dashDiv.classList.remove("hidden");
+
+  try {
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    if (userDoc.exists()) {
+      const data = userDoc.data();
+      const isPro = data.plan === "pro";
+      
+      const planEl = document.getElementById("planDisplay");
+      if (isPro) {
+        planEl.innerHTML = 'PRO <span class="badge-pro">PRO</span>';
+      } else {
+        planEl.textContent = 'FREE';
+      }
+      
+      if (!isPro) {
+        proSection.classList.remove("hidden");
+      } else {
+        proSection.classList.add("hidden");
+      }
+    }
+    
+    loadSites();
+  } catch (e) {
+    showNotification("Erreur lors du chargement des données", 'error');
+  }
+});
+
+window.handleCreateSite = async function() {
+  const domainVal = document.getElementById("domain").value.trim().toLowerCase();
+  
+  if (!domainVal) {
+    return showNotification("Veuillez entrer un domaine", 'error');
+  }
+  
+  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-_.]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
+  if (!domainRegex.test(domainVal)) {
+    return showNotification("Format de domaine invalide (ex: monsite.com)", 'error');
+  }
+  
+  try {
+    const user = auth.currentUser;
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+    const sitesLimit = userDoc.data().sitesLimit;
+    
+    const snap = await getDocs(query(collection(db, "sites"), where("owner", "==", user.uid)));
+    
+    if (snap.size >= sitesLimit) {
+      showNotification("Limite atteinte ! Passez au plan Pro pour plus de sites", 'error');
+      proSection.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+    
+    const existingDomain = await getDocs(
+      query(collection(db, "sites"), 
+            where("owner", "==", user.uid),
+            where("domain", "==", domainVal))
+    );
+    
+    if (!existingDomain.empty) {
+      return showNotification("Ce domaine est déjà enregistré", 'error');
+    }
+    
+    const siteId = "gx_" + Math.random().toString(36).substr(2, 9);
+    
+    await addDoc(collection(db, "sites"), {
+      owner: user.uid,
+      domain: domainVal,
+      siteId: siteId,
+      createdAt: Date.now()
+    });
+    
+    document.getElementById("domain").value = "";
+    showNotification("Site ajouté avec succès ! 🎉", 'success');
+    
+    sitesCache = [];
+    loadSites();
+  } catch (e) {
+    showNotification("Erreur lors de l'ajout du site: " + e.message, 'error');
+  }
+};
+
+async function loadSites() {
+  sitesDiv.innerHTML = '<div class="loader"></div>';
+  
+  try {
+    const q = query(
+      collection(db, "sites"), 
+      where("owner", "==", auth.currentUser.uid),
+      orderBy("createdAt", "desc")
+    );
+    const snap = await getDocs(q);
+    
+    if (snap.empty) {
+      sitesDiv.innerHTML = '<div class="empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><h3>Aucun site configuré</h3><p class="small">Ajoutez votre premier site pour commencer à analyser votre trafic</p></div>';
+      updateGlobalStats(0, 0, 0);
+      return;
+    }
+    
+    sitesCache = [];
+    sitesDiv.innerHTML = "";
+    
+    let globalVisits = 0;
+    let todayVisits = 0;
+    const today = new Date().setHours(0, 0, 0, 0);
+    
+    for (const docSnap of snap.docs) {
+      const site = docSnap.data();
+      
+      const visitsSnap = await getDocs(
+        query(collection(db, "visits"), where("siteId", "==", site.siteId))
+      );
+      const totalVisits = visitsSnap.size;
+      globalVisits += totalVisits;
+      
+      let siteTodayVisits = 0;
+      let daysCount = {};
+      let devices = { "Mobile": 0, "Desktop": 0, "Tablette": 0 };
+      let browsers = { "Chrome": 0, "Firefox": 0, "Safari": 0, "Edge": 0, "Autre": 0 };
+      let topPages = {};
+      
+      visitsSnap.forEach(function(v) {
+        const data = v.data();
+        const visitDate = new Date(data.timestamp);
+        
+        if (visitDate >= today) {
+          siteTodayVisits++;
+        }
+        
+        const dateKey = visitDate.toLocaleDateString('fr-FR');
+        daysCount[dateKey] = (daysCount[dateKey] || 0) + 1;
+        
+        const ua = data.device || "";
+        if (ua.includes("Mobile")) devices["Mobile"]++;
+        else if (ua.includes("Tablet")) devices["Tablette"]++;
+        else devices["Desktop"]++;
+        
+        if (ua.includes("Edg")) browsers["Edge"]++;
+        else if (ua.includes("Chrome")) browsers["Chrome"]++;
+        else if (ua.includes("Firefox")) browsers["Firefox"]++;
+        else if (ua.includes("Safari") && !ua.includes("Chrome")) browsers["Safari"]++;
+        else browsers["Autre"]++;
+        
+        const page = data.page || "Page inconnue";
+        topPages[page] = (topPages[page] || 0) + 1;
+      });
+      
+      todayVisits += siteTodayVisits;
+      
+      sitesCache.push({
+        id: docSnap.id,
+        domain: site.domain,
+        siteId: site.siteId,
+        createdAt: site.createdAt,
+        totalVisits: totalVisits,
+        todayVisits: siteTodayVisits,
+        daysCount: daysCount,
+        devices: devices,
+        browsers: browsers,
+        topPages: topPages
+      });
+    }
+    
+    updateGlobalStats(globalVisits, todayVisits, sitesCache.length);
+    renderSites();
+    
+  } catch (e) {
+    sitesDiv.innerHTML = '<p class="small" style="color:#ef4444; text-align: center;">Erreur lors du chargement des sites</p>';
+    showNotification("Erreur: " + e.message, 'error');
+  }
+}
+
+function updateGlobalStats(total, today, count) {
+  document.getElementById("totalVisits").textContent = total.toLocaleString();
+  document.getElementById("todayVisits").textContent = today.toLocaleString();
+  document.getElementById("sitesCount").textContent = count;
+}
+
+function renderSites() {
+  let filteredSites = sitesCache;
+  
+  if (currentFilter === 'recent') {
+    filteredSites = sitesCache.slice(0, 5);
+  }
+  
+  sitesDiv.innerHTML = "";
+  
+  filteredSites.forEach(function(site) {
+    const labelsDays = Object.keys(site.daysCount).slice(-14);
+    const dataDays = labelsDays.map(function(key) { return site.daysCount[key]; });
+    
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'card';
+    cardDiv.id = 'card_' + site.siteId;
+    
+    cardDiv.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap: wrap; gap: 12px;"><div><h3 style="margin:0 0 4px 0; color:#38bdf8;">🌐 ' + site.domain + '</h3><span class="small">ID: ' + site.siteId + '</span></div><div style="text-align:right;"><div style="font-size:28px; font-weight:800; color:#10b981;">' + site.totalVisits.toLocaleString() + '</div><span class="small">visites totales</span></div></div><div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:20px;"><div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:16px; text-align:center;"><div style="font-size:24px; font-weight:700; color:#10b981;">' + site.todayVisits + '</div><div class="small">Aujourd\'hui</div></div><div style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); border-radius:8px; padding:16px; text-align:center;"><div style="font-size:24px; font-weight:700; color:#a855f7;">' + Object.keys(site.topPages).length + '</div><div class="small">Pages uniques</div></div></div><div class="chart-box full-width"><canvas id="chartDays_' + site.siteId + '"></canvas></div><div class="flex-charts"><div class="chart-box"><canvas id="chartDevices_' + site.siteId + '"></canvas></div><div class="chart-box"><canvas id="chartBrowsers_' + site.siteId + '"></canvas></div></div><div style="margin-top:20px;"><h4 style="color:#cbd5e1; font-size:15px; margin-bottom:12px; font-weight:700;">📄 Top 5 Pages visitées</h4><div id="topPages_' + site.siteId + '"></div></div><div style="margin-top:24px;"><div class="small" style="margin-bottom:8px; font-weight:600; color:#cbd5e1;">📋 Script d\'intégration</div><div class="code">&lt;script src="https://gandxo.github.io/analytics/tracker.js" data-site="' + site.siteId + '"&gt;&lt;/script&gt;<button class="copy-btn" onclick="copyScript(\'' + site.siteId + '\')">Copier</button></div></div><div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;"><button class="btn-outline" style="flex:1; min-width:140px;" onclick="downloadCard(\'card_' + site.siteId + '\',\'' + site.domain + '\')">📸 Télécharger</button><button class="btn-outline" style="flex:1; min-width:140px;" onclick="refreshSite(\'' + site.siteId + '\')">🔄 Actualiser</button><button class="btn-danger" style="min-width:140px;" onclick="deleteSite(\'' + site.id + '\', \'' + site.siteId + '\', \'' + site.domain + '\')">🗑️ Supprimer</button></div>';
+    
+    sitesDiv.appendChild(cardDiv);
+    
+    setTimeout(function() {
+      renderChart('chartDays_' + site.siteId, 'line', labelsDays, dataDays, 'Visites par jour');
+      renderChart('chartDevices_' + site.siteId, 'doughnut', Object.keys(site.devices), Object.values(site.devices), 'Appareils');
+      renderChart('chartBrowsers_' + site.siteId, 'doughnut', Object.keys(site.browsers), Object.values(site.browsers), 'Navigateurs');
+      renderTopPages(site.siteId, site.topPages);
+    }, 100);
+  });
+}
+
+function renderTopPages(siteId, topPages) {
+  const container = document.getElementById('topPages_' + siteId);
+  if (!container) return;
+  
+  const sorted = Object.entries(topPages)
+    .sort(function(a, b) { return b[1] - a[1]; })
+    .slice(0, 5);
+  
+  if (sorted.length === 0) {
+    container.innerHTML = '<p class="small" style="text-align:center; padding:20px;">Aucune donnée disponible</p>';
+    return;
+  }
+  
+  container.innerHTML = sorted.map(function(item) {
+    const page = item[0];
+    const count = item[1];
+    const shortPage = page.length > 60 ? page.substring(0, 60) + '...' : page;
+    return '<div class="page-item"><span class="page-url" title="' + page + '">' + shortPage + '</span><span class="page-count">' + count + '</span></div>';
+  }).join('');
+}
+
+function renderChart(canvasId, type, labels, data, labelTitle) {
+  if (chartsCache[canvasId]) {
+    chartsCache[canvasId].destroy();
+  }
+  
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  
+  const config = {
+    type: type,
+    data: {
+      labels: labels,
+      datasets: [{
+        label: labelTitle,
+        data: data,
+        borderColor: "#38bdf8",
+        backgroundColor: type === 'line' ? 
+          "rgba(56,189,248,0.1)" : 
+          ["#38bdf8", "#a855f7", "#10b981", "#f59e0b", "#ef4444"],
+        borderWidth: 2,
+        tension: 0.4,
+        fill: type === 'line'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { 
+          display: type === 'doughnut', 
+          labels: { 
+            color: '#cbd5e1',
+            font: { size: 12 },
+            padding: 12
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.95)',
+          titleColor: '#fff',
+          bodyColor: '#cbd5e1',
+          borderColor: '#38bdf8',
+          borderWidth: 1,
+          padding: 12,
+          displayColors: true,
+          cornerRadius: 8
+        }
+      },
+      scales: type === 'line' ? {
+        y: { 
+          beginAtZero: true, 
+          ticks: { 
+            color: '#94a3b8',
+            font: { size: 11 }
+          }, 
+          grid: { color: 'rgba(51, 65, 85, 0.5)' }
+        },
+        x: { 
+          ticks: { 
+            color: '#94a3b8',
+            font: { size: 11 },
+            maxRotation: 45,
+            minRotation: 45
+          }, 
+          grid: { display: false }
+        }
+      } : {}
+    }
+  };
+  
+  chartsCache[canvasId] = new Chart(ctx, config);
+}
+
+window.deleteSite = async function(docId, siteId, domain) {
+  if (!confirm('⚠️ ATTENTION\n\nVous allez supprimer définitivement :\n• Site : ' + domain + '\n• Toutes ses statistiques\n\nCette action est irréversible. Continuer ?')) {
+    return;
+  }
+  
+  try {
+    showNotification("Suppression en cours...", 'info');
+    
+    await deleteDoc(doc(db, "sites", docId));
+    
+    const visitsSnap = await getDocs(
+      query(collection(db, "visits"), where("siteId", "==", siteId))
+    );
+    
+    const batchPromises = [];
+    visitsSnap.forEach(function(docSnap) {
+      batchPromises.push(deleteDoc(docSnap.ref));
+    });
+    await Promise.all(batchPromises);
+    
+    showNotification("Site supprimé avec succès", 'success');
+    sitesCache = [];
+    loadSites();
+  } catch (e) {
+    showNotification("Erreur lors de la suppression: " + e.message, 'error');
+  }
+};
+
+window.refreshSite = function(siteId) {
+  showNotification("Actualisation des données...", 'info');
+  sitesCache = [];
+  loadSites();
+};
+
+window.copyScript = function(siteId) {
+  const scriptText = '<script src="https://gandxo.github.io/analytics/tracker.js" data-site="' + siteId + '"></script>';
+  navigator.clipboard.writeText(scriptText).then(function() {
+    showNotification("Script copié dans le presse-papier ! 📋", 'success');
+  }).catch(function() {
+    showNotification("Erreur lors de la copie", 'error');
+  });
+};
+
+window.downloadCard = async function(cardId, name) {
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  
+  try {
+    showNotification("Génération du rapport...", 'info');
+    const canvas = await html2canvas(card, {
+      backgroundColor: "#1e293b",
+      scale: 2,
+      logging: false,
+      useCORS: true
+    });
+    
+    const link = document.createElement("a");
+    const date = new Date().toISOString().split('T')[0];
+    link.download = 'Gandxo_Analytics_' + name + '_' + date + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    
+    showNotification("Rapport téléchargé avec succès ! 📸", 'success');
+  } catch (e) {
+    showNotification("Erreur lors du téléchargement", 'error');
+  }
+};
+
+window.filterSites = function(filter, event) {
+  currentFilter = filter;
+  
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(function(tab) {
+    tab.classList.remove('active');
+  });
+  event.target.classList.add('active');
+  
+  renderSites();
+};
+
+window.showPaymentModal = function() {
+  document.getElementById("paymentModal").classList.remove("hidden");
+};
+
+window.closePaymentModal = function() {
+  document.getElementById("paymentModal").classList.add("hidden");
+  document.getElementById("phoneNumber").value = "";
+};
+
+window.processPro = async function() {
+  const phone = document.getElementById("phoneNumber").value.trim();
+  
+  if (!phone) {
+    return showNotification("Veuillez entrer un numéro de téléphone", 'error');
+  }
+  
+  const phoneRegex = /^(\+242|0)[0-9]{9}$/;
+  if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+    return showNotification("Numéro de téléphone invalide (format: +242 06 XXX XX XX)", 'error');
+  }
+  
+  try {
+    showNotification("Traitement du paiement...", 'info');
+    
+    await new Promise(function(resolve) { setTimeout(resolve, 2000); });
+    
+    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+      plan: "pro",
+      sitesLimit: 10,
+      upgradedAt: Date.now(),
+      paymentPhone: phone
+    });
+    
+    closePaymentModal();
+    showNotification("🎉 Paiement réussi ! Vous êtes maintenant PRO", 'success');
+    
+    document.getElementById("planDisplay").innerHTML = 'PRO <span class="badge-pro">PRO</span>';
+    proSection.classList.add("hidden");
+    
+    loadSites();
+    
+  } catch (e) {
+    showNotification("Erreur lors du paiement: " + e.message, 'error');
+  }
+};
+
+console.log("🚀 Gandxo Analytics Pro v2.0 initialisé");
+</script>
+
+</body>
+</html>
