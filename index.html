@@ -15,7 +15,6 @@
     
     .container { padding: 20px; max-width: 1200px; margin: auto; }
     
-    /* Header */
     .header { 
         display: flex; 
         justify-content: space-between; 
@@ -35,7 +34,6 @@
     
     h2, h3 { margin-top: 0; color: #fff; }
     
-    /* Notifications */
     .notification { 
         position: fixed; 
         top: 20px; 
@@ -56,7 +54,6 @@
     @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     @keyframes slideOut { to { transform: translateX(400px); opacity: 0; } }
     
-    /* Loader */
     .loader { 
         border: 3px solid rgba(56, 189, 248, 0.2); 
         border-top-color: #38bdf8; 
@@ -68,7 +65,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     
-    /* Form Elements */
     input, button, select { 
         width: 100%; 
         padding: 14px 16px; 
@@ -88,7 +84,6 @@
     }
     input::placeholder { color: #64748b; }
     
-    /* Buttons */
     button { 
         font-weight: 600; 
         cursor: pointer; 
@@ -133,7 +128,6 @@
         margin: 0;
     }
 
-    /* Cards */
     .card { 
         border: 1px solid #334155; 
         border-radius: 16px; 
@@ -149,7 +143,6 @@
         transform: translateY(-2px);
     }
     
-    /* Stats Grid */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -177,7 +170,6 @@
         font-weight: 600;
     }
     
-    /* Code Block */
     .code { 
         font-family: 'Courier New', monospace; 
         font-size: 13px; 
@@ -212,7 +204,6 @@
     .hidden { display: none !important; }
     .small { font-size: 13px; color: #94a3b8; margin-bottom: 8px; }
     
-    /* Charts */
     .flex-charts { 
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -233,7 +224,6 @@
         grid-column: 1 / -1;
     }
 
-    /* Pro Badge */
     .badge-pro { 
         background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%); 
         color: #000; 
@@ -245,13 +235,11 @@
         box-shadow: 0 2px 8px rgba(250, 204, 21, 0.3);
     }
     
-    /* Pro Section */
     #proSection { 
         border: 2px solid #facc15; 
         background: linear-gradient(135deg, rgba(250, 204, 21, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
     }
     
-    /* Empty State */
     .empty-state {
         text-align: center;
         padding: 60px 20px;
@@ -264,7 +252,6 @@
         opacity: 0.5;
     }
     
-    /* Tabs */
     .tabs {
         display: flex;
         gap: 8px;
@@ -291,7 +278,6 @@
         color: #cbd5e1;
     }
     
-    /* Modal */
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -310,7 +296,6 @@
         width: 100%;
     }
     
-    /* Top Pages */
     .page-item {
         display: flex;
         justify-content: space-between;
@@ -337,7 +322,6 @@
         flex-shrink: 0;
     }
     
-    /* Responsive */
     @media (max-width: 768px) {
         .container { padding: 12px; }
         .header { 
@@ -374,7 +358,6 @@
 
 <div class="container">
 
-<!-- Auth Section -->
 <div id="auth">
   <div class="header" style="border: none; justify-content: center;">
     <div class="logo">📊 Gandxo Analytics</div>
@@ -396,14 +379,12 @@
   </div>
 </div>
 
-<!-- Dashboard Section -->
 <div id="dashboard" class="hidden">
   <div class="header">
     <div class="logo">📊 Gandxo Analytics</div>
     <button onclick="handleLogout()" class="btn-outline btn-small">Déconnexion</button>
   </div>
   
-  <!-- Stats Overview -->
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-label">Plan actuel</div>
@@ -423,7 +404,6 @@
     </div>
   </div>
 
-  <!-- Add Site Section -->
   <div class="card">
     <h3>➕ Ajouter un nouveau site</h3>
     <p class="small">Entrez le domaine de votre site (ex: monsite.com ou www.monsite.fr)</p>
@@ -431,7 +411,6 @@
     <button class="btn-primary" onclick="handleCreateSite()">Ajouter le site</button>
   </div>
 
-  <!-- Sites List -->
   <div class="tabs">
     <button class="tab active" onclick="filterSites('all', event)">Tous les sites</button>
     <button class="tab" onclick="filterSites('recent', event)">Récents</button>
@@ -439,7 +418,6 @@
   
   <div id="sites"></div>
 
-  <!-- Pro Upgrade Section -->
   <div id="proSection" class="hidden card">
     <h3 style="color:#facc15;">🚀 Passez au plan Pro</h3>
     <p class="small" style="color: #cbd5e1;">
@@ -452,7 +430,6 @@
   </div>
 </div>
 
-<!-- Payment Modal -->
 <div id="paymentModal" class="hidden modal-overlay">
   <div class="card modal-content">
     <h3>💳 Paiement MTN Mobile Money</h3>
@@ -504,15 +481,15 @@ let sitesCache = [];
 let chartsCache = {};
 let currentFilter = 'all';
 
-function showNotification(message, type = 'info') {
+function showNotification(message, type) {
   const notif = document.createElement('div');
   notif.className = 'notification ' + type;
   notif.textContent = message;
   document.body.appendChild(notif);
   
-  setTimeout(function() {
+  setTimeout(() => {
     notif.style.animation = 'slideOut 0.3s ease';
-    setTimeout(function() { notif.remove(); }, 300);
+    setTimeout(() => notif.remove(), 300);
   }, 3000);
 }
 
@@ -563,11 +540,7 @@ window.handleLogin = async function() {
     await signInWithEmailAndPassword(auth, email, password);
     showNotification("Connexion réussie ! 👋", 'success');
   } catch (e) {
-    if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
-      showNotification("Email ou mot de passe incorrect", 'error');
-    } else {
-      showNotification("Erreur de connexion: " + e.message, 'error');
-    }
+    showNotification("Email ou mot de passe incorrect", 'error');
   }
 };
 
@@ -582,7 +555,7 @@ window.handleLogout = async function() {
   }
 };
 
-onAuthStateChanged(auth, async function(user) {
+onAuthStateChanged(auth, async (user) => {
   if (!user) {
     authDiv.classList.remove("hidden");
     dashDiv.classList.add("hidden");
@@ -668,7 +641,7 @@ window.handleCreateSite = async function() {
     sitesCache = [];
     loadSites();
   } catch (e) {
-    showNotification("Erreur lors de l'ajout du site: " + e.message, 'error');
+    showNotification("Erreur: " + e.message, 'error');
   }
 };
 
@@ -684,7 +657,7 @@ async function loadSites() {
     const snap = await getDocs(q);
     
     if (snap.empty) {
-      sitesDiv.innerHTML = '<div class="empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><h3>Aucun site configuré</h3><p class="small">Ajoutez votre premier site pour commencer à analyser votre trafic</p></div>';
+      sitesDiv.innerHTML = '<div class="empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><h3>Aucun site configuré</h3><p class="small">Ajoutez votre premier site pour commencer</p></div>';
       updateGlobalStats(0, 0, 0);
       return;
     }
@@ -711,7 +684,7 @@ async function loadSites() {
       let browsers = { "Chrome": 0, "Firefox": 0, "Safari": 0, "Edge": 0, "Autre": 0 };
       let topPages = {};
       
-      visitsSnap.forEach(function(v) {
+      visitsSnap.forEach((v) => {
         const data = v.data();
         const visitDate = new Date(data.timestamp);
         
@@ -757,7 +730,7 @@ async function loadSites() {
     renderSites();
     
   } catch (e) {
-    sitesDiv.innerHTML = '<p class="small" style="color:#ef4444; text-align: center;">Erreur lors du chargement des sites</p>';
+    sitesDiv.innerHTML = '<p class="small" style="color:#ef4444; text-align: center;">Erreur</p>';
     showNotification("Erreur: " + e.message, 'error');
   }
 }
@@ -777,19 +750,65 @@ function renderSites() {
   
   sitesDiv.innerHTML = "";
   
-  filteredSites.forEach(function(site) {
+  filteredSites.forEach((site) => {
     const labelsDays = Object.keys(site.daysCount).slice(-14);
-    const dataDays = labelsDays.map(function(key) { return site.daysCount[key]; });
+    const dataDays = labelsDays.map((key) => site.daysCount[key]);
     
     const cardDiv = document.createElement('div');
     cardDiv.className = 'card';
     cardDiv.id = 'card_' + site.siteId;
     
-    cardDiv.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap: wrap; gap: 12px;"><div><h3 style="margin:0 0 4px 0; color:#38bdf8;">🌐 ' + site.domain + '</h3><span class="small">ID: ' + site.siteId + '</span></div><div style="text-align:right;"><div style="font-size:28px; font-weight:800; color:#10b981;">' + site.totalVisits.toLocaleString() + '</div><span class="small">visites totales</span></div></div><div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:20px;"><div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:16px; text-align:center;"><div style="font-size:24px; font-weight:700; color:#10b981;">' + site.todayVisits + '</div><div class="small">Aujourd\'hui</div></div><div style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); border-radius:8px; padding:16px; text-align:center;"><div style="font-size:24px; font-weight:700; color:#a855f7;">' + Object.keys(site.topPages).length + '</div><div class="small">Pages uniques</div></div></div><div class="chart-box full-width"><canvas id="chartDays_' + site.siteId + '"></canvas></div><div class="flex-charts"><div class="chart-box"><canvas id="chartDevices_' + site.siteId + '"></canvas></div><div class="chart-box"><canvas id="chartBrowsers_' + site.siteId + '"></canvas></div></div><div style="margin-top:20px;"><h4 style="color:#cbd5e1; font-size:15px; margin-bottom:12px; font-weight:700;">📄 Top 5 Pages visitées</h4><div id="topPages_' + site.siteId + '"></div></div><div style="margin-top:24px;"><div class="small" style="margin-bottom:8px; font-weight:600; color:#cbd5e1;">📋 Script d\'intégration</div><div class="code">&lt;script src="https://gandxo.github.io/analytics/tracker.js" data-site="' + site.siteId + '"&gt;&lt;/script&gt;<button class="copy-btn" onclick="copyScript(\'' + site.siteId + '\')">Copier</button></div></div><div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;"><button class="btn-outline" style="flex:1; min-width:140px;" onclick="downloadCard(\'card_' + site.siteId + '\',\'' + site.domain + '\')">📸 Télécharger</button><button class="btn-outline" style="flex:1; min-width:140px;" onclick="refreshSite(\'' + site.siteId + '\')">🔄 Actualiser</button><button class="btn-danger" style="min-width:140px;" onclick="deleteSite(\'' + site.id + '\', \'' + site.siteId + '\', \'' + site.domain + '\')">🗑️ Supprimer</button></div>';
+    const scriptTag = '&lt;script src="https://gandxo.github.io/analytics/tracker.js" data-site="' + site.siteId + '"&gt;&lt;/script&gt;';
+    
+    cardDiv.innerHTML = 
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap: wrap; gap: 12px;">' +
+        '<div>' +
+          '<h3 style="margin:0 0 4px 0; color:#38bdf8;">🌐 ' + site.domain + '</h3>' +
+          '<span class="small">ID: ' + site.siteId + '</span>' +
+        '</div>' +
+        '<div style="text-align:right;">' +
+          '<div style="font-size:28px; font-weight:800; color:#10b981;">' + site.totalVisits.toLocaleString() + '</div>' +
+          '<span class="small">visites totales</span>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:20px;">' +
+        '<div style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:16px; text-align:center;">' +
+          '<div style="font-size:24px; font-weight:700; color:#10b981;">' + site.todayVisits + '</div>' +
+          '<div class="small">Aujourd\'hui</div>' +
+        '</div>' +
+        '<div style="background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); border-radius:8px; padding:16px; text-align:center;">' +
+          '<div style="font-size:24px; font-weight:700; color:#a855f7;">' + Object.keys(site.topPages).length + '</div>' +
+          '<div class="small">Pages uniques</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="chart-box full-width">' +
+        '<canvas id="chartDays_' + site.siteId + '"></canvas>' +
+      '</div>' +
+      '<div class="flex-charts">' +
+        '<div class="chart-box">' +
+          '<canvas id="chartDevices_' + site.siteId + '"></canvas>' +
+        '</div>' +
+        '<div class="chart-box">' +
+          '<canvas id="chartBrowsers_' + site.siteId + '"></canvas>' +
+        '</div>' +
+      '</div>' +
+      '<div style="margin-top:20px;">' +
+        '<h4 style="color:#cbd5e1; font-size:15px; margin-bottom:12px; font-weight:700;">📄 Top 5 Pages visitées</h4>' +
+        '<div id="topPages_' + site.siteId + '"></div>' +
+      '</div>' +
+      '<div style="margin-top:24px;">' +
+        '<div class="small" style="margin-bottom:8px; font-weight:600; color:#cbd5e1;">📋 Script d\'intégration</div>' +
+        '<div class="code">' + scriptTag + '<button class="copy-btn" onclick="copyScript(\'' + site.siteId + '\')">Copier</button></div>' +
+      '</div>' +
+      '<div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">' +
+        '<button class="btn-outline" style="flex:1; min-width:140px;" onclick="downloadCard(\'card_' + site.siteId + '\',\'' + site.domain + '\')">📸 Télécharger</button>' +
+        '<button class="btn-outline" style="flex:1; min-width:140px;" onclick="refreshSite()">🔄 Actualiser</button>' +
+        '<button class="btn-danger" style="min-width:140px;" onclick="deleteSite(\'' + site.id + '\', \'' + site.siteId + '\', \'' + site.domain + '\')">🗑️ Supprimer</button>' +
+      '</div>';
     
     sitesDiv.appendChild(cardDiv);
     
-    setTimeout(function() {
+    setTimeout(() => {
       renderChart('chartDays_' + site.siteId, 'line', labelsDays, dataDays, 'Visites par jour');
       renderChart('chartDevices_' + site.siteId, 'doughnut', Object.keys(site.devices), Object.values(site.devices), 'Appareils');
       renderChart('chartBrowsers_' + site.siteId, 'doughnut', Object.keys(site.browsers), Object.values(site.browsers), 'Navigateurs');
@@ -803,7 +822,7 @@ function renderTopPages(siteId, topPages) {
   if (!container) return;
   
   const sorted = Object.entries(topPages)
-    .sort(function(a, b) { return b[1] - a[1]; })
+    .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
   
   if (sorted.length === 0) {
@@ -811,7 +830,7 @@ function renderTopPages(siteId, topPages) {
     return;
   }
   
-  container.innerHTML = sorted.map(function(item) {
+  container.innerHTML = sorted.map((item) => {
     const page = item[0];
     const count = item[1];
     const shortPage = page.length > 60 ? page.substring(0, 60) + '...' : page;
@@ -827,6 +846,8 @@ function renderChart(canvasId, type, labels, data, labelTitle) {
   const ctx = document.getElementById(canvasId);
   if (!ctx) return;
   
+  const colors = ["#38bdf8", "#a855f7", "#10b981", "#f59e0b", "#ef4444"];
+  
   const config = {
     type: type,
     data: {
@@ -835,9 +856,7 @@ function renderChart(canvasId, type, labels, data, labelTitle) {
         label: labelTitle,
         data: data,
         borderColor: "#38bdf8",
-        backgroundColor: type === 'line' ? 
-          "rgba(56,189,248,0.1)" : 
-          ["#38bdf8", "#a855f7", "#10b981", "#f59e0b", "#ef4444"],
+        backgroundColor: type === 'line' ? "rgba(56,189,248,0.1)" : colors,
         borderWidth: 2,
         tension: 0.4,
         fill: type === 'line'
@@ -869,19 +888,11 @@ function renderChart(canvasId, type, labels, data, labelTitle) {
       scales: type === 'line' ? {
         y: { 
           beginAtZero: true, 
-          ticks: { 
-            color: '#94a3b8',
-            font: { size: 11 }
-          }, 
+          ticks: { color: '#94a3b8', font: { size: 11 } }, 
           grid: { color: 'rgba(51, 65, 85, 0.5)' }
         },
         x: { 
-          ticks: { 
-            color: '#94a3b8',
-            font: { size: 11 },
-            maxRotation: 45,
-            minRotation: 45
-          }, 
+          ticks: { color: '#94a3b8', font: { size: 11 }, maxRotation: 45, minRotation: 45 }, 
           grid: { display: false }
         }
       } : {}
@@ -892,9 +903,9 @@ function renderChart(canvasId, type, labels, data, labelTitle) {
 }
 
 window.deleteSite = async function(docId, siteId, domain) {
-  if (!confirm('⚠️ ATTENTION\n\nVous allez supprimer définitivement :\n• Site : ' + domain + '\n• Toutes ses statistiques\n\nCette action est irréversible. Continuer ?')) {
-    return;
-  }
+  const confirmMsg = 'ATTENTION\n\nVous allez supprimer:\n• Site: ' + domain + '\n• Toutes ses statistiques\n\nContinuer?';
+  
+  if (!confirm(confirmMsg)) return;
   
   try {
     showNotification("Suppression en cours...", 'info');
@@ -906,7 +917,7 @@ window.deleteSite = async function(docId, siteId, domain) {
     );
     
     const batchPromises = [];
-    visitsSnap.forEach(function(docSnap) {
+    visitsSnap.forEach((docSnap) => {
       batchPromises.push(deleteDoc(docSnap.ref));
     });
     await Promise.all(batchPromises);
@@ -915,21 +926,22 @@ window.deleteSite = async function(docId, siteId, domain) {
     sitesCache = [];
     loadSites();
   } catch (e) {
-    showNotification("Erreur lors de la suppression: " + e.message, 'error');
+    showNotification("Erreur: " + e.message, 'error');
   }
 };
 
-window.refreshSite = function(siteId) {
+window.refreshSite = function() {
   showNotification("Actualisation des données...", 'info');
   sitesCache = [];
   loadSites();
 };
 
 window.copyScript = function(siteId) {
-  const scriptText = '<script src="https://gandxo.github.io/analytics/tracker.js" data-site="' + siteId + '"></script>';
-  navigator.clipboard.writeText(scriptText).then(function() {
-    showNotification("Script copié dans le presse-papier ! 📋", 'success');
-  }).catch(function() {
+  const scriptText = '<script src="https://gandxo.github.io/analytics/tracker.js" data-site="' + siteId + '"><' + '/script>';
+  
+  navigator.clipboard.writeText(scriptText).then(() => {
+    showNotification("Script copié ! 📋", 'success');
+  }).catch(() => {
     showNotification("Erreur lors de la copie", 'error');
   });
 };
@@ -953,7 +965,7 @@ window.downloadCard = async function(cardId, name) {
     link.href = canvas.toDataURL('image/png');
     link.click();
     
-    showNotification("Rapport téléchargé avec succès ! 📸", 'success');
+    showNotification("Rapport téléchargé ! 📸", 'success');
   } catch (e) {
     showNotification("Erreur lors du téléchargement", 'error');
   }
@@ -963,7 +975,7 @@ window.filterSites = function(filter, event) {
   currentFilter = filter;
   
   const tabs = document.querySelectorAll('.tab');
-  tabs.forEach(function(tab) {
+  tabs.forEach((tab) => {
     tab.classList.remove('active');
   });
   event.target.classList.add('active');
@@ -989,13 +1001,13 @@ window.processPro = async function() {
   
   const phoneRegex = /^(\+242|0)[0-9]{9}$/;
   if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
-    return showNotification("Numéro de téléphone invalide (format: +242 06 XXX XX XX)", 'error');
+    return showNotification("Numéro invalide (format: +242 06 XXX XX XX)", 'error');
   }
   
   try {
     showNotification("Traitement du paiement...", 'info');
     
-    await new Promise(function(resolve) { setTimeout(resolve, 2000); });
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     
     await updateDoc(doc(db, "users", auth.currentUser.uid), {
       plan: "pro",
@@ -1005,7 +1017,7 @@ window.processPro = async function() {
     });
     
     closePaymentModal();
-    showNotification("🎉 Paiement réussi ! Vous êtes maintenant PRO", 'success');
+    showNotification("🎉 Paiement réussi ! Vous êtes PRO", 'success');
     
     document.getElementById("planDisplay").innerHTML = 'PRO <span class="badge-pro">PRO</span>';
     proSection.classList.add("hidden");
@@ -1013,11 +1025,11 @@ window.processPro = async function() {
     loadSites();
     
   } catch (e) {
-    showNotification("Erreur lors du paiement: " + e.message, 'error');
+    showNotification("Erreur: " + e.message, 'error');
   }
 };
 
-console.log("🚀 Gandxo Analytics Pro v2.0 initialisé");
+console.log("🚀 Gandxo Analytics v2.0 chargé");
 </script>
 
 </body>
