@@ -1,1 +1,31 @@
-v
+{
+  "rewrites": [
+    {
+      "source": "/tracker.js",
+      "destination": "/tracker.js"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/tracker.js",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, OPTIONS"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    }
+  ]
+}
