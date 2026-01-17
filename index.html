@@ -2,724 +2,76 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>Gandxo Analytics Pro</title>
+<title>SIS Live Audio</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-    * { 
-        box-sizing: border-box; 
-        margin: 0; 
-        padding: 0; 
-    }
-    
-    body { 
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
-        background: #0a0e27;
-        color: #e2e8f0; 
-        min-height: 100vh;
-        overflow-x: hidden;
-    }
-    
-    body::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.15) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 50%);
-        pointer-events: none;
-        z-index: 0;
-    }
-    
-    .container { 
-        padding: 20px; 
-        max-width: 1400px; 
-        margin: auto; 
-        position: relative;
-        z-index: 1;
-    }
-    
-    .header { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        padding: 30px 0; 
-        border-bottom: 1px solid rgba(255,255,255,0.1); 
-        margin-bottom: 40px;
-        backdrop-filter: blur(10px);
-    }
-    
-    .logo { 
-        font-size: 28px; 
-        font-weight: 800; 
-        background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #a855f7 100%); 
-        -webkit-background-clip: text; 
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        letter-spacing: -0.5px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .logo::before {
-        content: '📊';
-        font-size: 32px;
-    }
-    
-    h2, h3 { 
-        margin-top: 0; 
-        color: #fff; 
-        font-weight: 700;
-    }
-    
-    .notification { 
-        position: fixed; 
-        top: 30px; 
-        right: 30px; 
-        padding: 18px 28px; 
-        border-radius: 16px; 
-        color: #fff; 
-        z-index: 10000; 
-        animation: slideInNotif 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
-        box-shadow: 0 20px 40px rgba(0,0,0,0.4); 
-        max-width: 400px;
-        font-weight: 600;
-        font-size: 15px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255,255,255,0.1);
-    }
-    
-    .notification.success { 
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.9) 0%, rgba(5, 150, 105, 0.9) 100%); 
-    }
-    
-    .notification.error { 
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.9) 100%); 
-    }
-    
-    .notification.info { 
-        background: linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.9) 100%); 
-    }
-    
-    @keyframes slideInNotif { 
-        from { 
-            transform: translateX(500px) scale(0.8); 
-            opacity: 0; 
-        } 
-        to { 
-            transform: translateX(0) scale(1); 
-            opacity: 1; 
-        } 
-    }
-    
-    @keyframes slideOutNotif { 
-        to { 
-            transform: translateX(500px) scale(0.8); 
-            opacity: 0; 
-        } 
-    }
-    
-    .loader-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 200px;
-    }
-    
-    .loader { 
-        width: 50px;
-        height: 50px;
-        border: 4px solid rgba(56, 189, 248, 0.2);
-        border-top-color: #38bdf8;
-        border-radius: 50%;
-        animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-    }
-    
-    @keyframes spin { 
-        to { transform: rotate(360deg); } 
-    }
-    
-    input, button, select { 
-        width: 100%; 
-        padding: 16px 20px; 
-        margin: 10px 0; 
-        border-radius: 12px; 
-        border: 1px solid rgba(255,255,255,0.1); 
-        background: rgba(30, 41, 59, 0.6); 
-        color: #fff; 
-        font-size: 15px;
-        transition: all 0.3s ease;
-        font-family: 'Inter', sans-serif;
-        backdrop-filter: blur(10px);
-    }
-    
-    input:focus, select:focus { 
-        outline: none; 
-        border-color: #38bdf8; 
-        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2);
-        background: rgba(30, 41, 59, 0.8);
-        transform: translateY(-2px);
-    }
-    
-    input::placeholder { 
-        color: #64748b; 
-    }
-    
-    button { 
-        font-weight: 600; 
-        cursor: pointer; 
-        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        border: none;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    button::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-    
-    button:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-    
-    button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-    
-    .btn-primary { 
-        background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); 
-        color: #000; 
-        box-shadow: 0 10px 30px rgba(56, 189, 248, 0.3);
-        font-weight: 700;
-    }
-    
-    .btn-primary:hover:not(:disabled) { 
-        transform: translateY(-3px); 
-        box-shadow: 0 15px 40px rgba(56, 189, 248, 0.5);
-    }
-    
-    .btn-primary:active:not(:disabled) {
-        transform: translateY(-1px);
-    }
-    
-    .btn-danger { 
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); 
-        color: #fff; 
-        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
-    }
-    
-    .btn-danger:hover:not(:disabled) { 
-        transform: translateY(-3px);
-        box-shadow: 0 15px 40px rgba(239, 68, 68, 0.5);
-    }
-    
-    .btn-outline { 
-        background: rgba(71, 85, 105, 0.3); 
-        border: 1px solid rgba(255,255,255,0.2);
-        color: #cbd5e1;
-        backdrop-filter: blur(10px);
-    }
-    
-    .btn-outline:hover:not(:disabled) { 
-        background: rgba(71, 85, 105, 0.5); 
-        border-color: #64748b;
-        transform: translateY(-2px);
-    }
-    
-    .btn-small {
-        width: auto;
-        padding: 10px 20px;
-        font-size: 14px;
-        margin: 0;
-    }
-
-    .card { 
-        border: 1px solid rgba(255,255,255,0.1); 
-        border-radius: 20px; 
-        padding: 30px; 
-        margin-top: 30px; 
-        background: rgba(30, 41, 59, 0.4); 
-        backdrop-filter: blur(20px);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(135deg, rgba(56, 189, 248, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    .card:hover {
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-        transform: translateY(-5px);
-        border-color: rgba(56, 189, 248, 0.3);
-    }
-    
-    .card:hover::before {
-        opacity: 1;
-    }
-    
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-        margin-bottom: 30px;
-    }
-    
-    .stat-card {
-        background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(129, 140, 248, 0.1) 100%);
-        border: 1px solid rgba(56, 189, 248, 0.3);
-        border-radius: 16px;
-        padding: 25px;
-        text-align: center;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(45deg, transparent, rgba(56, 189, 248, 0.1), transparent);
-        transform: rotate(45deg);
-        transition: all 0.6s ease;
-    }
-    
-    .stat-card:hover::before {
-        top: 100%;
-        left: 100%;
-    }
-    
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(56, 189, 248, 0.2);
-    }
-    
-    .stat-value {
-        font-size: 40px;
-        font-weight: 800;
-        background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin: 15px 0;
-    }
-    
-    .stat-label {
-        font-size: 13px;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-weight: 600;
-    }
-    
-    .code { 
-        font-family: 'Courier New', 'Monaco', monospace; 
-        font-size: 13px; 
-        background: rgba(15, 23, 42, 0.8); 
-        padding: 20px; 
-        border-radius: 12px; 
-        border: 1px solid rgba(56, 189, 248, 0.3); 
-        white-space: pre-wrap; 
-        word-break: break-all; 
-        color: #a5f3fc;
-        position: relative;
-        line-height: 1.6;
-    }
-    
-    .copy-btn {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        padding: 8px 16px;
-        background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-        color: #000;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 700;
-        width: auto;
-        margin: 0;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
-    }
-    
-    .copy-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
-    }
-    
-    .hidden { 
-        display: none !important; 
-    }
-    
-    .small { 
-        font-size: 14px; 
-        color: #94a3b8; 
-        margin-bottom: 10px;
-        line-height: 1.6;
-    }
-    
-    .flex-charts { 
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 20px; 
-        margin-top: 25px; 
-    }
-    
-    .chart-box { 
-        height: 280px; 
-        position: relative; 
-        background: rgba(15, 23, 42, 0.6); 
-        border-radius: 16px; 
-        padding: 20px;
-        border: 1px solid rgba(255,255,255,0.1);
-        backdrop-filter: blur(10px);
-    }
-    
-    .full-width { 
-        width: 100%; 
-        height: 350px;
-        grid-column: 1 / -1;
-    }
-
-    .badge-pro { 
-        background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%); 
-        color: #000; 
-        padding: 5px 12px; 
-        border-radius: 8px; 
-        font-size: 11px; 
-        font-weight: 800; 
-        vertical-align: middle;
-        box-shadow: 0 4px 12px rgba(250, 204, 21, 0.4);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    #proSection { 
-        border: 2px solid #facc15; 
-        background: linear-gradient(135deg, rgba(250, 204, 21, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    #proSection::before {
-        content: '⭐';
-        position: absolute;
-        font-size: 200px;
-        opacity: 0.05;
-        right: -50px;
-        top: -50px;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 80px 20px;
-        color: #64748b;
-    }
-    
-    .empty-state svg {
-        width: 100px;
-        height: 100px;
-        margin-bottom: 25px;
-        opacity: 0.3;
-        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-    }
-    
-    .tabs {
-        display: flex;
-        gap: 10px;
-        border-bottom: 2px solid rgba(255,255,255,0.1);
-        margin-bottom: 30px;
-    }
-    
-    .tab {
-        padding: 14px 28px;
-        background: transparent;
-        border: none;
-        border-bottom: 3px solid transparent;
-        color: #94a3b8;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        width: auto;
-        margin: 0;
-        font-size: 15px;
-    }
-    
-    .tab.active {
-        color: #38bdf8;
-        border-bottom-color: #38bdf8;
-        background: rgba(56, 189, 248, 0.1);
-    }
-    
-    .tab:hover {
-        color: #cbd5e1;
-        background: rgba(255,255,255,0.05);
-    }
-    
-    .modal-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(10px);
-        z-index: 10000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        animation: fadeIn 0.3s ease;
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
-    .modal-content {
-        max-width: 550px;
-        width: 100%;
-        animation: scaleIn 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    }
-    
-    @keyframes scaleIn {
-        from { 
-            transform: scale(0.8); 
-            opacity: 0;
-        }
-        to { 
-            transform: scale(1); 
-            opacity: 1;
-        }
-    }
-    
-    .page-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 16px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        transition: all 0.3s ease;
-        border-radius: 8px;
-        margin-bottom: 8px;
-    }
-    
-    .page-item:hover {
-        background: rgba(56, 189, 248, 0.05);
-        border-color: rgba(56, 189, 248, 0.3);
-        transform: translateX(5px);
-    }
-    
-    .page-item:last-child {
-        border-bottom: none;
-    }
-    
-    .page-url {
-        color: #cbd5e1;
-        font-size: 14px;
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        margin-right: 15px;
-        font-weight: 500;
-    }
-    
-    .page-count {
-        color: #38bdf8;
-        font-weight: 700;
-        font-size: 16px;
-        flex-shrink: 0;
-        background: rgba(56, 189, 248, 0.1);
-        padding: 6px 14px;
-        border-radius: 8px;
-    }
-    
-    @media (max-width: 768px) {
-        .container { padding: 15px; }
-        
-        .header { 
-            flex-direction: column; 
-            gap: 20px; 
-            text-align: center; 
-            padding: 20px 0;
-        }
-        
-        .stats-grid { 
-            grid-template-columns: 1fr; 
-        }
-        
-        .flex-charts {
-            grid-template-columns: 1fr;
-        }
-        
-        .logo {
-            font-size: 24px;
-        }
-        
-        .stat-value {
-            font-size: 32px;
-        }
-        
-        .code {
-            font-size: 11px;
-            padding: 15px;
-        }
-        
-        .copy-btn {
-            position: relative;
-            display: block;
-            margin-top: 15px;
-            width: 100%;
-        }
-        
-        .notification {
-            right: 15px;
-            left: 15px;
-            max-width: none;
-        }
-    }
+body{
+  margin:0;
+  background:#0d0d14;
+  color:#fff;
+  font-family:system-ui;
+}
+header{
+  padding:15px;
+  background:#12121c;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+button{
+  background:#ff2d55;
+  border:none;
+  color:#fff;
+  padding:10px 14px;
+  border-radius:8px;
+  font-size:14px;
+}
+#container{padding:15px}
+#likes{font-size:18px;cursor:pointer}
+#comments{
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:#12121c;
+}
+#comments input{
+  width:80%;
+  padding:10px;
+  border:none;
+  background:#1a1a26;
+  color:white;
+}
+#comments button{width:20%}
+#log{max-height:150px;overflow:auto;font-size:13px}
 </style>
 </head>
+
 <body>
 
-<div class="container">
+<header>
+  <div>SIS 🔴 Live Audio</div>
+  <div id="likes">❤️ 0</div>
+</header>
 
-<div id="auth">
-  <div class="header" style="border: none; justify-content: center;">
-    <div class="logo">Gandxo Analytics</div>
-  </div>
-  
-  <div class="card" style="max-width: 500px; margin: 80px auto;">
-    <h2 style="text-align: center; margin-bottom: 12px; font-size: 32px;">Bienvenue</h2>
-    <p class="small" style="text-align: center; margin-bottom: 30px; font-size: 16px;">Analysez le trafic de vos sites en temps réel avec des statistiques détaillées</p>
-    
-    <input id="email" type="email" placeholder="adresse@email.com" autocomplete="email">
-    <input id="password" type="password" placeholder="Mot de passe (min 6 caractères)" autocomplete="current-password">
-    
-    <button class="btn-primary" onclick="handleLogin()">Se connecter</button>
-    <button class="btn-outline" onclick="handleRegister()">Créer un compte</button>
-    
-    <p class="small" style="text-align: center; margin-top: 25px; margin-bottom: 0; font-size: 13px;">
-      🔒 Vos données sont sécurisées et cryptées avec Firebase
-    </p>
-  </div>
+<div id="container">
+  <button id="create">Créer un live</button>
+  <button id="join" style="display:none">Rejoindre</button>
+  <p id="links"></p>
+  <div id="log"></div>
 </div>
 
-<div id="dashboard" class="hidden">
-  <div class="header">
-    <div class="logo">Gandxo Analytics</div>
-    <button onclick="handleLogout()" class="btn-outline btn-small">Déconnexion</button>
-  </div>
-  
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-label">Plan actuel</div>
-      <div class="stat-value" id="planDisplay" style="font-size: 28px;">FREE</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Sites actifs</div>
-      <div class="stat-value" id="sitesCount">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Visites totales</div>
-      <div class="stat-value" id="totalVisits">0</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Aujourd'hui</div>
-      <div class="stat-value" id="todayVisits">0</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <h3 style="margin-bottom: 10px;">➕ Ajouter un nouveau site</h3>
-    <p class="small">Entrez le domaine de votre site web pour commencer à tracker les visites</p>
-    <input id="domain" placeholder="exemple: monsite.com ou www.monsite.fr" type="text">
-    <button class="btn-primary" onclick="handleCreateSite()">Ajouter le site</button>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" onclick="filterSites('all', event)">Tous les sites</button>
-    <button class="tab" onclick="filterSites('recent', event)">Récents</button>
-  </div>
-  
-  <div id="sites"></div>
-
-  <div id="proSection" class="hidden card">
-    <h3 style="color:#facc15; font-size: 28px;">🚀 Passez au plan Pro</h3>
-    <p class="small" style="color: #cbd5e1; font-size: 16px; margin-top: 15px;">
-      Débloquez jusqu'à 10 sites, statistiques avancées, export illimité et support prioritaire 24/7.
-    </p>
-    <div style="margin: 30px 0;">
-      <div style="font-size: 48px; font-weight: 800; color: #facc15;">
-        5000 FCFA
-        <span style="font-size: 18px; color: #94a3b8; font-weight: 600;">/mois</span>
-      </div>
-    </div>
-    <button class="btn-primary" style="background: linear-gradient(135deg, #facc15 0%, #f59e0b 100%); color: #000; font-size: 16px;" onclick="showPaymentModal()">💳 Souscrire maintenant</button>
-  </div>
+<div id="comments">
+  <input id="msg" placeholder="Commenter le live…">
+  <button id="send">Envoyer</button>
 </div>
 
-<div id="paymentModal" class="hidden modal-overlay" onclick="closePaymentModal()">
-  <div class="card modal-content" onclick="event.stopPropagation()">
-    <h3 style="margin-bottom: 10px; font-size: 24px;">💳 Paiement MTN Mobile Money</h3>
-    <p class="small" style="font-size: 15px;">Entrez votre numéro MTN pour finaliser votre souscription au plan Pro</p>
-    
-    <input id="phoneNumber" type="tel" placeholder="+242 06 XXX XX XX" maxlength="17">
-    
-    <div style="display: flex; gap: 15px; margin-top: 25px;">
-      <button class="btn-primary" onclick="processPro()" style="flex: 1;">Payer 5000 FCFA</button>
-      <button class="btn-outline" onclick="closePaymentModal()" style="flex: 1;">Annuler</button>
-    </div>
-    
-    <p class="small" style="text-align: center; margin-top: 25px; margin-bottom: 0; font-size: 13px;">
-      🔒 Paiement 100% sécurisé via MTN Mobile Money
-    </p>
-  </div>
-</div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<audio id="remoteAudio" autoplay></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, setDoc, getDoc, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot } 
+from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDHCqPBzhWNnXuBrLvfa4NqCFeOdIRy6UI",
@@ -731,602 +83,79 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getFirestore();
+const db = getFirestore(app);
 
-const authDiv = document.getElementById("auth");
-const dashDiv = document.getElementById("dashboard");
-const sitesDiv = document.getElementById("sites");
-const proSection = document.getElementById("proSection");
+const pc = new RTCPeerConnection();
+const audio = document.getElementById("remoteAudio");
+pc.ontrack = e => audio.srcObject = e.streams[0];
 
-let sitesCache = [];
-let chartsCache = {};
-let currentFilter = 'all';
-
-function showNotification(message, type) {
-  const notif = document.createElement('div');
-  notif.className = 'notification ' + type;
-  notif.textContent = message;
-  document.body.appendChild(notif);
-  
-  setTimeout(() => {
-    notif.style.animation = 'slideOutNotif 0.4s ease';
-    setTimeout(() => notif.remove(), 400);
-  }, 3500);
+async function mic(){
+  const s = await navigator.mediaDevices.getUserMedia({audio:true});
+  s.getTracks().forEach(t=>pc.addTrack(t,s));
 }
 
-window.handleRegister = async function() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  
-  if (!email || !password) {
-    return showNotification("Veuillez remplir tous les champs", 'error');
-  }
-  
-  if (password.length < 6) {
-    return showNotification("Le mot de passe doit contenir au moins 6 caractères", 'error');
-  }
-  
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return showNotification("Adresse email invalide", 'error');
-  }
-  
-  try {
-    const res = await createUserWithEmailAndPassword(auth, email, password);
-    await setDoc(doc(db, "users", res.user.uid), {
-      plan: "free",
-      sitesLimit: 1,
-      createdAt: Date.now(),
-      email: email
-    });
-    showNotification("✨ Compte créé avec succès ! Bienvenue", 'success');
-  } catch (e) {
-    if (e.code === 'auth/email-already-in-use') {
-      showNotification("Cette adresse email est déjà utilisée", 'error');
-    } else {
-      showNotification("Erreur: " + e.message, 'error');
-    }
-  }
-};
+const params = new URLSearchParams(location.search);
+const roomId = params.get("room");
+const role = params.get("role") || "listener";
 
-window.handleLogin = async function() {
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  
-  if (!email || !password) {
-    return showNotification("Veuillez remplir tous les champs", 'error');
-  }
-  
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    showNotification("👋 Connexion réussie ! Bon retour", 'success');
-  } catch (e) {
-    showNotification("Email ou mot de passe incorrect", 'error');
-  }
-};
+if(roomId) document.getElementById("join").style.display="inline-block";
 
-window.handleLogout = async function() {
-  try {
-    await signOut(auth);
-    showNotification("À bientôt ! Déconnexion réussie", 'info');
-    sitesCache = [];
-    chartsCache = {};
-  } catch (e) {
-    showNotification("Erreur lors de la déconnexion", 'error');
-  }
-};
-
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    authDiv.classList.remove("hidden");
-    dashDiv.classList.add("hidden");
-    return;
-  }
-  
-  authDiv.classList.add("hidden");
-  dashDiv.classList.remove("hidden");
-
-  try {
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    if (userDoc.exists()) {
-      const data = userDoc.data();
-      const isPro = data.plan === "pro";
-      
-      const planEl = document.getElementById("planDisplay");
-      if (isPro) {
-        planEl.innerHTML = 'PRO <span class="badge-pro">PRO</span>';
-      } else {
-        planEl.textContent = 'FREE';
-      }
-      
-      if (!isPro) {
-        proSection.classList.remove("hidden");
-      } else {
-        proSection.classList.add("hidden");
-      }
-    }
-    
-    loadSites();
-  } catch (e) {
-    showNotification("Erreur lors du chargement des données", 'error');
-  }
-});
-
-window.handleCreateSite = async function() {
-  const domainVal = document.getElementById("domain").value.trim().toLowerCase();
-  
-  if (!domainVal) {
-    return showNotification("Veuillez entrer un domaine", 'error');
-  }
-  
-  const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-_.]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/;
-  if (!domainRegex.test(domainVal)) {
-    return showNotification("Format de domaine invalide (ex: monsite.com)", 'error');
-  }
-  
-  try {
-    const user = auth.currentUser;
-    const userDoc = await getDoc(doc(db, "users", user.uid));
-    const sitesLimit = userDoc.data().sitesLimit;
-    
-    const snap = await getDocs(query(collection(db, "sites"), where("owner", "==", user.uid)));
-    
-    if (snap.size >= sitesLimit) {
-      showNotification("🚀 Limite atteinte ! Passez au plan Pro pour plus de sites", 'error');
-      proSection.scrollIntoView({ behavior: 'smooth' });
-      return;
-    }
-    
-    const existingDomain = await getDocs(
-      query(collection(db, "sites"), 
-            where("owner", "==", user.uid),
-            where("domain", "==", domainVal))
-    );
-    
-    if (!existingDomain.empty) {
-      return showNotification("Ce domaine est déjà enregistré", 'error');
-    }
-    
-    const siteId = "gx_" + Math.random().toString(36).substr(2, 9);
-    
-    await addDoc(collection(db, "sites"), {
-      owner: user.uid,
-      domain: domainVal,
-      siteId: siteId,
-      createdAt: Date.now()
-    });
-    
-    document.getElementById("domain").value = "";
-    showNotification("🎉 Site ajouté avec succès ! Le tracking va commencer", 'success');
-    
-    sitesCache = [];
-    loadSites();
-  } catch (e) {
-    showNotification("Erreur: " + e.message, 'error');
-  }
-};
-
-async function loadSites() {
-  sitesDiv.innerHTML = '<div class="loader-container"><div class="loader"></div></div>';
-  
-  try {
-    const q = query(
-      collection(db, "sites"), 
-      where("owner", "==", auth.currentUser.uid),
-      orderBy("createdAt", "desc")
-    );
-    const snap = await getDocs(q);
-    
-    if (snap.empty) {
-      sitesDiv.innerHTML = '<div class="empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><h3 style="font-size: 24px; margin-bottom: 10px;">Aucun site configuré</h3><p class="small" style="font-size: 16px;">Ajoutez votre premier site pour commencer à analyser votre trafic web</p></div>';
-      updateGlobalStats(0, 0, 0);
-      return;
-    }
-    
-    sitesCache = [];
-    sitesDiv.innerHTML = "";
-    
-    let globalVisits = 0;
-    let todayVisits = 0;
-    const today = new Date().setHours(0, 0, 0, 0);
-    
-    for (const docSnap of snap.docs) {
-      const site = docSnap.data();
-      
-      const visitsSnap = await getDocs(
-        query(collection(db, "visits"), where("siteId", "==", site.siteId))
-      );
-      const totalVisits = visitsSnap.size;
-      globalVisits += totalVisits;
-      
-      let siteTodayVisits = 0;
-      let daysCount = {};
-      let devices = { "Mobile": 0, "Desktop": 0, "Tablette": 0 };
-      let browsers = { "Chrome": 0, "Firefox": 0, "Safari": 0, "Edge": 0, "Autre": 0 };
-      let topPages = {};
-      
-      visitsSnap.forEach((v) => {
-        const data = v.data();
-        const visitDate = new Date(data.timestamp);
-        
-        if (visitDate >= today) {
-          siteTodayVisits++;
-        }
-        
-        const dateKey = visitDate.toLocaleDateString('fr-FR');
-        daysCount[dateKey] = (daysCount[dateKey] || 0) + 1;
-        
-        const ua = data.device || "";
-        if (ua.includes("Mobile")) devices["Mobile"]++;
-        else if (ua.includes("Tablet")) devices["Tablette"]++;
-        else devices["Desktop"]++;
-        
-        if (ua.includes("Edg")) browsers["Edge"]++;
-        else if (ua.includes("Chrome")) browsers["Chrome"]++;
-        else if (ua.includes("Firefox")) browsers["Firefox"]++;
-        else if (ua.includes("Safari") && !ua.includes("Chrome")) browsers["Safari"]++;
-        else browsers["Autre"]++;
-        
-        const page = data.page || "Page inconnue";
-        topPages[page] = (topPages[page] || 0) + 1;
-      });
-      
-      todayVisits += siteTodayVisits;
-      
-      sitesCache.push({
-        id: docSnap.id,
-        domain: site.domain,
-        siteId: site.siteId,
-        createdAt: site.createdAt,
-        totalVisits: totalVisits,
-        todayVisits: siteTodayVisits,
-        daysCount: daysCount,
-        devices: devices,
-        browsers: browsers,
-        topPages: topPages
-      });
-    }
-    
-    updateGlobalStats(globalVisits, todayVisits, sitesCache.length);
-    renderSites();
-    
-  } catch (e) {
-    sitesDiv.innerHTML = '<p class="small" style="color:#ef4444; text-align: center;">Erreur lors du chargement</p>';
-    showNotification("Erreur: " + e.message, 'error');
-  }
-}
-
-function updateGlobalStats(total, today, count) {
-  document.getElementById("totalVisits").textContent = total.toLocaleString();
-  document.getElementById("todayVisits").textContent = today.toLocaleString();
-  document.getElementById("sitesCount").textContent = count;
-}
-
-function renderSites() {
-  let filteredSites = sitesCache;
-  
-  if (currentFilter === 'recent') {
-    filteredSites = sitesCache.slice(0, 5);
-  }
-  
-  sitesDiv.innerHTML = "";
-  
-  filteredSites.forEach((site) => {
-    const labelsDays = Object.keys(site.daysCount).slice(-14);
-    const dataDays = labelsDays.map((key) => site.daysCount[key]);
-    
-    const cardDiv = document.createElement('div');
-    cardDiv.className = 'card';
-    cardDiv.id = 'card_' + site.siteId;
-    
-    const scriptOpenTag = '&lt;script src="https://analytics-sepia-beta.vercel.app/tracker.js" data-site="' + site.siteId + '"&gt;';
-    const scriptCloseTag = '&lt;/script&gt;';
-    const fullScript = scriptOpenTag + scriptCloseTag;
-    
-    cardDiv.innerHTML = 
-      '<div style="position: relative;">' +
-        '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; flex-wrap: wrap; gap: 15px;">' +
-          '<div>' +
-            '<h3 style="margin:0 0 8px 0; color:#38bdf8; font-size: 24px;">🌐 ' + site.domain + '</h3>' +
-            '<span class="small" style="font-size: 12px;">ID: <code style="background: rgba(56,189,248,0.1); padding: 4px 8px; border-radius: 6px; color: #38bdf8;">' + site.siteId + '</code></span>' +
-          '</div>' +
-          '<div style="text-align:right;">' +
-            '<div style="font-size:42px; font-weight:800; background: linear-gradient(135deg, #10b981 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">' + site.totalVisits.toLocaleString() + '</div>' +
-            '<span class="small">visites totales</span>' +
-          '</div>' +
-        '</div>' +
-        
-        '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:15px; margin-bottom:25px;">' +
-          '<div style="background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); border-radius:12px; padding:20px; text-align:center; transition: all 0.3s ease;">' +
-            '<div style="font-size:32px; font-weight:700; color:#10b981;">' + site.todayVisits + '</div>' +
-            '<div class="small">Aujourd\'hui</div>' +
-          '</div>' +
-          '<div style="background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.4); border-radius:12px; padding:20px; text-align:center; transition: all 0.3s ease;">' +
-            '<div style="font-size:32px; font-weight:700; color:#a855f7;">' + Object.keys(site.topPages).length + '</div>' +
-            '<div class="small">Pages uniques</div>' +
-          '</div>' +
-        '</div>' +
-        
-        '<div class="chart-box full-width">' +
-          '<canvas id="chartDays_' + site.siteId + '"></canvas>' +
-        '</div>' +
-        
-        '<div class="flex-charts">' +
-          '<div class="chart-box">' +
-            '<canvas id="chartDevices_' + site.siteId + '"></canvas>' +
-          '</div>' +
-          '<div class="chart-box">' +
-            '<canvas id="chartBrowsers_' + site.siteId + '"></canvas>' +
-          '</div>' +
-        '</div>' +
-        
-        '<div style="margin-top:25px;">' +
-          '<h4 style="color:#cbd5e1; font-size:18px; margin-bottom:15px; font-weight:700;">📄 Top 5 Pages visitées</h4>' +
-          '<div id="topPages_' + site.siteId + '"></div>' +
-        '</div>' +
-        
-        '<div style="margin-top:30px;">' +
-          '<div class="small" style="margin-bottom:10px; font-weight:600; color:#cbd5e1; font-size: 15px;">📋 Script d\'intégration</div>' +
-          '<p class="small" style="margin-bottom: 15px;">Copiez ce code et collez-le dans le <code style="background: rgba(56,189,248,0.1); padding: 2px 6px; border-radius: 4px; color: #38bdf8;">&lt;head&gt;</code> de votre site :</p>' +
-          '<div class="code" style="padding-right: 120px;">' + fullScript + '<button class="copy-btn" onclick="copyScript(\'' + site.siteId + '\')">📋 Copier</button></div>' +
-        '</div>' +
-        
-        '<div style="margin-top:25px; display:flex; gap:15px; flex-wrap:wrap;">' +
-          '<button class="btn-outline" style="flex:1; min-width:160px;" onclick="downloadCard(\'card_' + site.siteId + '\',\'' + site.domain + '\')">📸 Télécharger</button>' +
-          '<button class="btn-outline" style="flex:1; min-width:160px;" onclick="refreshSite()">🔄 Actualiser</button>' +
-          '<button class="btn-danger" style="min-width:160px;" onclick="deleteSite(\'' + site.id + '\', \'' + site.siteId + '\', \'' + site.domain + '\')">🗑️ Supprimer</button>' +
-        '</div>' +
-      '</div>';
-    
-    sitesDiv.appendChild(cardDiv);
-    
-    setTimeout(() => {
-      renderChart('chartDays_' + site.siteId, 'line', labelsDays, dataDays, 'Visites par jour');
-      renderChart('chartDevices_' + site.siteId, 'doughnut', Object.keys(site.devices), Object.values(site.devices), 'Appareils');
-      renderChart('chartBrowsers_' + site.siteId, 'doughnut', Object.keys(site.browsers), Object.values(site.browsers), 'Navigateurs');
-      renderTopPages(site.siteId, site.topPages);
-    }, 150);
+document.getElementById("create").onclick = async ()=>{
+  await mic();
+  const ref = doc(db,"lives",crypto.randomUUID());
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  await setDoc(ref,{
+    offer,
+    likes:0,
+    comments:[]
   });
-}
 
-function renderTopPages(siteId, topPages) {
-  const container = document.getElementById('topPages_' + siteId);
-  if (!container) return;
-  
-  const sorted = Object.entries(topPages)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-  
-  if (sorted.length === 0) {
-    container.innerHTML = '<p class="small" style="text-align:center; padding:30px; font-size: 15px;">Aucune donnée disponible</p>';
-    return;
-  }
-  
-  container.innerHTML = sorted.map((item, index) => {
-    const page = item[0];
-    const count = item[1];
-    const shortPage = page.length > 70 ? page.substring(0, 70) + '...' : page;
-    const medal = index === 0 ? '🥇 ' : (index === 1 ? '🥈 ' : (index === 2 ? '🥉 ' : ''));
-    return '<div class="page-item">' + medal + '<span class="page-url" title="' + page + '">' + shortPage + '</span><span class="page-count">' + count + '</span></div>';
-  }).join('');
-}
+  const base = location.origin+location.pathname;
+  document.getElementById("links").innerHTML = `
+  Public : ${base}?room=${ref.id}<br>
+  Speaker : ${base}?room=${ref.id}&role=speaker
+  `;
 
-function renderChart(canvasId, type, labels, data, labelTitle) {
-  if (chartsCache[canvasId]) {
-    chartsCache[canvasId].destroy();
-  }
-  
-  const ctx = document.getElementById(canvasId);
-  if (!ctx) return;
-  
-  const colors = ["#38bdf8", "#a855f7", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
-  
-  const config = {
-    type: type,
-    data: {
-      labels: labels,
-      datasets: [{
-        label: labelTitle,
-        data: data,
-        borderColor: "#38bdf8",
-        backgroundColor: type === 'line' ? "rgba(56,189,248,0.15)" : colors,
-        borderWidth: 3,
-        tension: 0.4,
-        fill: type === 'line',
-        pointBackgroundColor: '#38bdf8',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { 
-          display: type === 'doughnut', 
-          labels: { 
-            color: '#cbd5e1',
-            font: { size: 13, weight: '600' },
-            padding: 15
-          }
-        },
-        tooltip: {
-          backgroundColor: 'rgba(10, 14, 39, 0.95)',
-          titleColor: '#fff',
-          bodyColor: '#cbd5e1',
-          borderColor: '#38bdf8',
-          borderWidth: 2,
-          padding: 15,
-          displayColors: true,
-          cornerRadius: 12,
-          titleFont: { size: 14, weight: 'bold' },
-          bodyFont: { size: 13 }
-        }
-      },
-      scales: type === 'line' ? {
-        y: { 
-          beginAtZero: true, 
-          ticks: { color: '#94a3b8', font: { size: 12 } }, 
-          grid: { color: 'rgba(148, 163, 184, 0.1)' },
-          border: { dash: [5, 5] }
-        },
-        x: { 
-          ticks: { color: '#94a3b8', font: { size: 12 }, maxRotation: 45, minRotation: 45 }, 
-          grid: { display: false }
-        }
-      } : {}
+  onSnapshot(ref,s=>{
+    if(s.data().answer && !pc.currentRemoteDescription){
+      pc.setRemoteDescription(s.data().answer);
     }
-  };
-  
-  chartsCache[canvasId] = new Chart(ctx, config);
-}
-
-window.deleteSite = async function(docId, siteId, domain) {
-  const confirmMsg = '⚠️ ATTENTION\n\nVous allez supprimer :\n\n• Site : ' + domain + '\n• Toutes ses statistiques\n\nCette action est IRRÉVERSIBLE.\n\nContinuer ?';
-  
-  if (!confirm(confirmMsg)) return;
-  
-  try {
-    showNotification("🗑️ Suppression en cours...", 'info');
-    
-    await deleteDoc(doc(db, "sites", docId));
-    
-    const visitsSnap = await getDocs(
-      query(collection(db, "visits"), where("siteId", "==", siteId))
-    );
-    
-    const batchPromises = [];
-    visitsSnap.forEach((docSnap) => {
-      batchPromises.push(deleteDoc(docSnap.ref));
-    });
-    await Promise.all(batchPromises);
-    
-    showNotification("✅ Site supprimé avec succès", 'success');
-    sitesCache = [];
-    loadSites();
-  } catch (e) {
-    showNotification("Erreur: " + e.message, 'error');
-  }
-};
-
-window.refreshSite = function() {
-  showNotification("🔄 Actualisation en cours...", 'info');
-  sitesCache = [];
-  loadSites();
-};
-
-window.copyScript = function(siteId) {
-  const scriptText = '<script src="https://analytics-sepia-beta.vercel.app/tracker.js" data-site="' + siteId + '"></' + 'script>';
-  
-  navigator.clipboard.writeText(scriptText).then(() => {
-    showNotification("📋 Script copié dans le presse-papier !", 'success');
-  }).catch(() => {
-    const textarea = document.createElement('textarea');
-    textarea.value = scriptText;
-    textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textarea);
-    showNotification("📋 Script copié !", 'success');
   });
 };
 
-window.downloadCard = async function(cardId, name) {
-  const card = document.getElementById(cardId);
-  if (!card) return;
-  
-  try {
-    showNotification("📸 Génération du rapport...", 'info');
-    
-    const canvas = await html2canvas(card, {
-      backgroundColor: "#0a0e27",
-      scale: 2,
-      logging: false,
-      useCORS: true,
-      allowTaint: true
-    });
-    
-    const link = document.createElement("a");
-    const date = new Date().toISOString().split('T')[0];
-    link.download = 'Gandxo_' + name.replace(/[^a-z0-9]/gi, '_') + '_' + date + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-    
-    showNotification("✅ Rapport téléchargé !", 'success');
-  } catch (e) {
-    showNotification("Erreur: " + e.message, 'error');
-  }
-};
+document.getElementById("join").onclick = async ()=>{
+  if(role==="speaker") await mic();
+  const ref = doc(db,"lives",roomId);
+  const snap = await getDoc(ref);
+  await pc.setRemoteDescription(snap.data().offer);
+  const ans = await pc.createAnswer();
+  await pc.setLocalDescription(ans);
+  await updateDoc(ref,{answer:ans});
 
-window.filterSites = function(filter, event) {
-  currentFilter = filter;
-  
-  const tabs = document.querySelectorAll('.tab');
-  tabs.forEach((tab) => {
-    tab.classList.remove('active');
+  onSnapshot(ref,s=>{
+    document.getElementById("likes").innerText="❤️ "+s.data().likes;
+    document.getElementById("log").innerHTML =
+      (s.data().comments||[]).map(c=>"<div>"+c+"</div>").join("");
   });
-  event.target.classList.add('active');
-  
-  renderSites();
 };
 
-window.showPaymentModal = function() {
-  document.getElementById("paymentModal").classList.remove("hidden");
+document.getElementById("likes").onclick = async ()=>{
+  const ref = doc(db,"lives",roomId);
+  const snap = await getDoc(ref);
+  await updateDoc(ref,{likes:snap.data().likes+1});
 };
 
-window.closePaymentModal = function() {
-  document.getElementById("paymentModal").classList.add("hidden");
-  document.getElementById("phoneNumber").value = "";
+document.getElementById("send").onclick = async ()=>{
+  const ref = doc(db,"lives",roomId);
+  const snap = await getDoc(ref);
+  const txt = document.getElementById("msg").value;
+  if(!txt) return;
+  await updateDoc(ref,{
+    comments:[...(snap.data().comments||[]),txt]
+  });
+  document.getElementById("msg").value="";
 };
-
-window.processPro = async function() {
-  const phone = document.getElementById("phoneNumber").value.trim();
-  
-  if (!phone) {
-    return showNotification("Veuillez entrer un numéro", 'error');
-  }
-  
-  const phoneRegex = /^(\+242|0)[0-9]{9}$/;
-  if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
-    return showNotification("Numéro invalide (ex: +242 06 XXX XX XX)", 'error');
-  }
-  
-  try {
-    showNotification("💳 Traitement du paiement...", 'info');
-    
-    await new Promise((resolve) => setTimeout(resolve, 2500));
-    
-    await updateDoc(doc(db, "users", auth.currentUser.uid), {
-      plan: "pro",
-      sitesLimit: 10,
-      upgradedAt: Date.now(),
-      paymentPhone: phone
-    });
-    
-    closePaymentModal();
-    showNotification("🎉 Vous êtes maintenant PRO !", 'success');
-    
-    document.getElementById("planDisplay").innerHTML = 'PRO <span class="badge-pro">PRO</span>';
-    proSection.classList.add("hidden");
-    
-    setTimeout(() => {
-      showNotification("🚀 Vous pouvez maintenant ajouter jusqu'à 10 sites !", 'info');
-    }, 2000);
-    
-    loadSites();
-    
-  } catch (e) {
-    showNotification("Erreur: " + e.message, 'error');
-  }
-};
-
-console.log("🚀 Gandxo Analytics Pro v2.0");
-console.log("📊 Système opérationnel");
 </script>
 
 </body>
