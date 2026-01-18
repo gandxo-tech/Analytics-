@@ -584,5 +584,1058 @@
         // ============================================
         // CONFIGURATION FIREBASE
         // ============================================
-        const firebaseConfig = {
-          
+        
+const firebaseConfig = {
+            apiKey: "AIzaSyDHCqPBzhWNnXuBrLvfa4NqCFeOdIRy6UI",
+            authDomain: "gandxo-analytics.firebaseapp.com",
+            projectId: "gandxo-analytics",
+            storageBucket: "gandxo-analytics.firebasestorage.app",
+            messagingSenderId: "660347922907",
+            appId: "1:660347922907:web:652a37718edae658561ffe"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        let currentUser = null;
+        let currentLiveId = null;
+        let currentRole = null; // 'host', 'speaker', 'listener'
+        let peerConnections = {};
+        let localStream = null;
+        let remoteStreams = {};
+        let unsubscribers = [];
+        let lastCommentTime = 0;
+        let lastHeartTime = 0;
+
+        const rtcConfig = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' }
+            ]
+        };
+
+        // ============================================
+        // NAVIGATION ENTRE ÉCRANS
+        // ============================================
+        function showScreen(screenId) {
+            const screens = ['auth-screen', 'home-screen', 'create-live-screen', 'live-screen'];
+            screens.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(screenId);
+            if (target) target.classList.remove('hidden');
+        }
+
+        window.switchAuthTab = function(tab) {
+            const buttons = document.querySelectorAll('.tab-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            if (tab === 'login') {
+                buttons[0].classList.add('active');
+                document.getElementById('login-tab').classList.remove('hidden');
+                document.getElementById('signup-tab').classList.add('hidden');
+            } else {
+                buttons[1].classList.add('active');
+                document.getElementById('login-tab').classList.add('hidden');
+                document.getElementById('signup-tab').classList.remove('hidden');
+            }
+        };
+
+        // ============================================
+        // AUTHENTIFICATION
+        // ============================================
+
+        // LOGIN
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                console.log('✅ Connexion réussie');
+            } catch (error) {
+                console.error('❌ Erreur login:', error);
+                alert('Erreur: ' + error.message);
+            }
+        });
+
+        // SIGNUP
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const pseudo = document.getElementById('signup-pseudo').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const password = document.getElementById('signup-password').value;
+            const confirm = document.getElementById('signup-password-confirm').value;
+
+            // Validation pseudo
+            if (!/^[a-zA-Z0-9_]{3,20}$/.test(pseudo)) {
+                alert('❌ Pseudo invalide ! (3-20 caractères, lettres/chiffres/underscore uniquement)');
+                return;
+            }
+
+            // Validation mots de passe
+            if (password !== confirm) {
+                alert('❌ Les mots de passe ne correspondent pas');
+                return;
+            }
+
+            if (password.length < 6) {
+                alert('❌ Le mot de passe doit contenir au moins 6 caractères');
+                return;
+            }
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const userId = userCredential.user.uid;
+
+                await db.collection('users').doc(userId).set({
+                    userId: userId,
+                    pseudo: pseudo,
+                    email: email,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    trustScore: 0,
+                    totalLivesHosted: 0,
+                    totalLivesAttended: 0,
+                    isBanned: false
+                });
+
+                console.log('✅ Compte créé:', pseudo);
+                alert('✅ Compte créé avec succès !');
+            } catch (error) {
+                console.error('❌ Erreur signup:', error);
+                alert('Erreur: ' + error.message);
+            }
+        });
+
+        // AUTH STATE CHANGED
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                currentUser = user;
+                console.log('✅ Utilisateur connecté:', user.uid);
+                
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    document.getElementById('user-pseudo').textContent = userData.pseudo;
+                    document.getElementById('user-email').textContent = user.email;
+                    document.getElementById('trust-score').textContent = userData.trustScore || 0;
+                    document.getElementById('lives-hosted').textContent = userData.totalLivesHosted || 0;
+                    
+                    showScreen('home-screen');
+                    loadPublicLives();
+                }
+            } else {
+                currentUser = null;
+                console.log('ℹ️ Aucun utilisateur connecté');
+                showScreen('auth-screen');
+            }
+        });
+
+        // LOGOUT
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            if (confirm('Se déconnecter ?')) {
+                await auth.signOut();
+            }
+        });
+
+        // ============================================
+        // CRÉATION DE LIVE
+        // ============================================
+        document.getElementById('create-live-btn').addEventListener('click', () => {
+            showScreen('create-live-screen');
+        });
+
+        document.getElementById('cancel-create-btn').addEventListener('click', () => {
+            showScreen('home-screen');
+        });
+
+        document.getElementById('create-live-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const title = document.getElementById('live-title').value.trim();
+            const isPublic = document.getElementById('is-public').checked;
+            const maxListeners = parseInt(document.getElementById('max-listeners').value);
+
+            if (!currentUser) {
+                alert('❌ Erreur: utilisateur non connecté');
+                return;
+            }
+
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                const userData = userDoc.data();
+
+                console.log('📝 Création du live...');
+
+                const liveRef = await db.collection('lives').add({
+                    hostId: currentUser.uid,
+                    hostPseudo: userData.pseudo,
+                    title: title,
+                    isPublic: isPublic,
+                    maxListeners: maxListeners,
+                    status: 'waiting',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    startedAt: null,
+                    endedAt: null,
+                    currentListeners: 0,
+                    currentSpeakers: [currentUser.uid],
+                    totalHearts: 0
+                });
+
+                await db.collection('users').doc(currentUser.uid).update({
+                    totalLivesHosted: firebase.firestore.FieldValue.increment(1)
+                });
+
+                console.log('✅ Live créé:', liveRef.id);
+
+                joinLiveRoom(liveRef.id, 'host');
+
+            } catch (error) {
+                console.error('❌ Erreur création live:', error);
+                alert('Erreur: ' + error.message);
+            }
+        });
+
+        // ============================================
+        // LISTE DES LIVES PUBLICS
+        // ============================================
+        function loadPublicLives() {
+            console.log('📡 Chargement des lives publics...');
+
+            const unsub = db.collection('lives')
+                .where('isPublic', '==', true)
+                .where('status', 'in', ['waiting', 'live'])
+                .orderBy('createdAt', 'desc')
+                .limit(20)
+                .onSnapshot(snapshot => {
+                    const grid = document.getElementById('lives-grid');
+                    grid.innerHTML = '';
+
+                    if (snapshot.empty) {
+                        grid.innerHTML = '<p style="text-align: center; color: #999;">Aucun live en cours</p>';
+                        return;
+                    }
+
+                    console.log(`✅ ${snapshot.size} live(s) trouvé(s)`);
+
+                    snapshot.forEach(doc => {
+                        const live = doc.data();
+                        const isFull = live.maxListeners && live.currentListeners >= live.maxListeners;
+                        
+                        const card = document.createElement('div');
+                        card.className = 'live-card';
+                        
+                        const statusClass = live.status === 'live' ? 'status' : 'status waiting';
+                        const statusText = live.status === 'live' ? '🔴 EN DIRECT' : '⏳ En attente';
+                        
+                        
+card.innerHTML = `
+                            <div class="${statusClass}">${statusText}</div>
+                            <h3>${live.title}</h3>
+                            <p style="margin: 8px 0;"><strong>Hôte:</strong> ${live.hostPseudo}</p>
+                            <p style="margin: 8px 0;">👁️ ${live.currentListeners || 0} / ${live.maxListeners} spectateurs</p>
+                            <p style="margin: 8px 0;">❤️ ${live.totalHearts || 0} hearts</p>
+                            ${isFull ? '<p style="color: red; font-weight: 600;">COMPLET</p>' : ''}
+                            <button class="btn btn-primary" style="width: 100%; margin-top: 15px;" 
+                                    ${isFull ? 'disabled' : ''} 
+                                    onclick="joinLiveRoom('${doc.id}', 'listener')">
+                                ${isFull ? '🚫 Complet' : '🎧 Rejoindre'}
+                            </button>
+                        `;
+                        
+                        grid.appendChild(card);
+                    });
+                }, error => {
+                    console.error('❌ Erreur chargement lives:', error);
+                });
+
+            unsubscribers.push(unsub);
+        }
+
+        // ============================================
+        // REJOINDRE UN LIVE
+        // ============================================
+        window.joinLiveRoom = async function(liveId, role) {
+            currentLiveId = liveId;
+            currentRole = role;
+
+            console.log(`🚪 Rejoindre le live ${liveId} en tant que ${role}`);
+
+            try {
+                // Vérifier que le live existe
+                const liveDoc = await db.collection('lives').doc(liveId).get();
+                
+                if (!liveDoc.exists) {
+                    alert('❌ Live introuvable');
+                    return;
+                }
+
+                const liveData = liveDoc.data();
+
+                // Vérifier si le live est complet
+                if (role === 'listener' && liveData.maxListeners) {
+                    if (liveData.currentListeners >= liveData.maxListeners) {
+                        alert('❌ Ce live est complet');
+                        return;
+                    }
+                }
+
+                // Afficher l'écran du live
+                showScreen('live-screen');
+                
+                // Remplir les informations
+                document.getElementById('live-title-display').textContent = liveData.title;
+                document.getElementById('live-host-display').textContent = `Hôte: ${liveData.hostPseudo}`;
+                document.getElementById('viewer-count').textContent = liveData.currentListeners || 0;
+
+                if (liveData.status === 'live') {
+                    document.getElementById('live-status-badge').classList.remove('hidden');
+                    document.getElementById('audio-status').textContent = '🔴 EN DIRECT';
+                    document.getElementById('audio-icon').textContent = '🔴';
+                }
+
+                // Ajouter l'utilisateur comme participant
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                const userData = userDoc.data();
+
+                await db.collection('lives').doc(liveId).collection('participants').doc(currentUser.uid).set({
+                    userId: currentUser.uid,
+                    pseudo: userData.pseudo,
+                    role: role,
+                    joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    handRaised: false,
+                    isMuted: false
+                });
+
+                // Incrémenter le compteur de spectateurs
+                await db.collection('lives').doc(liveId).update({
+                    currentListeners: firebase.firestore.FieldValue.increment(1)
+                });
+
+                // Incrémenter le compteur utilisateur
+                await db.collection('users').doc(currentUser.uid).update({
+                    totalLivesAttended: firebase.firestore.FieldValue.increment(1)
+                });
+
+                // Afficher les bons contrôles selon le rôle
+                if (role === 'host') {
+                    console.log('👑 Mode Hôte activé');
+                    document.getElementById('start-live-btn').classList.remove('hidden');
+                    document.getElementById('toggle-mic-btn').classList.remove('hidden');
+                    document.getElementById('host-controls').classList.remove('hidden');
+                    await setupLocalAudio();
+                } else if (role === 'speaker') {
+                    console.log('🎤 Mode Speaker activé');
+                    document.getElementById('toggle-mic-btn').classList.remove('hidden');
+                    await setupLocalAudio();
+                } else {
+                    console.log('👤 Mode Listener activé');
+                    document.getElementById('raise-hand-btn').classList.remove('hidden');
+                }
+
+                // Configurer les listeners en temps réel
+                setupLiveListeners(liveId);
+
+                // IMPORTANT: Connecter automatiquement aux speakers si on est listener
+                if (role === 'listener') {
+                    setTimeout(() => {
+                        console.log('🔗 Connexion automatique aux speakers...');
+                        connectToExistingSpeakers();
+                    }, 1500);
+                }
+
+                // IMPORTANT: Connecter automatiquement aux listeners si on est speaker/host
+                if (role === 'host' || role === 'speaker') {
+                    setTimeout(() => {
+                        console.log('🔗 Connexion automatique aux listeners...');
+                        connectToExistingListeners();
+                    }, 2000);
+                }
+
+            } catch (error) {
+                console.error('❌ Erreur join live:', error);
+                alert('Erreur: ' + error.message);
+                showScreen('home-screen');
+            }
+        };
+
+        // ============================================
+        // SETUP AUDIO LOCAL (MICRO)
+        // ============================================
+        async function setupLocalAudio() {
+            try {
+                console.log('🎤 Demande accès micro...');
+                
+                localStream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    } 
+                });
+                
+                console.log('✅ Micro activé');
+                
+                document.getElementById('audio-status').textContent = '🎤 Micro activé';
+                document.getElementById('audio-icon').textContent = '🎤';
+
+            } catch (error) {
+                console.error('❌ Erreur accès micro:', error);
+                alert('❌ Impossible d\'accéder au microphone. Vérifie les permissions.');
+            }
+        }
+
+        // ============================================
+        // CONNEXION AUTO: LISTENER → SPEAKERS
+        // ============================================
+        async function connectToExistingSpeakers() {
+            console.log('🔍 Recherche des speakers existants...');
+            
+            const snapshot = await db.collection('lives').doc(currentLiveId).collection('participants')
+                .where('role', 'in', ['host', 'speaker'])
+                .get();
+            
+            console.log(`✅ ${snapshot.size} speaker(s) trouvé(s)`);
+            
+            snapshot.forEach(doc => {
+                const participant = doc.data();
+                if (participant.userId !== currentUser.uid) {
+                    console.log(`🔗 Connexion au speaker: ${participant.pseudo}`);
+                    createPeerConnection(participant.userId);
+                }
+            });
+        }
+
+        // ============================================
+        // CONNEXION AUTO: SPEAKER → LISTENERS
+        // ============================================
+        async function connectToExistingListeners() {
+            console.log('🔍 Recherche des listeners existants...');
+            
+            const snapshot = await db.collection('lives').doc(currentLiveId).collection('participants')
+                .where('role', '==', 'listener')
+                .get();
+            
+            console.log(`✅ ${snapshot.size} listener(s) trouvé(s)`);
+            
+            snapshot.forEach(doc => {
+                const participant = doc.data();
+                if (participant.userId !== currentUser.uid) {
+                    console.log(`🔗 Connexion au listener: ${participant.pseudo}`);
+                    createPeerConnection(participant.userId);
+                }
+            });
+        }
+
+        // ============================================
+        // WEBRTC: CRÉER PEER CONNECTION
+        // ============================================
+        async function createPeerConnection(remoteUserId) {
+            if (peerConnections[remoteUserId]) {
+                console.log(`⚠️ Connexion déjà existante avec ${remoteUserId}`);
+                return;
+            }
+
+            console.log(`📡 Création PeerConnection avec ${remoteUserId}`);
+
+            const pc = new RTCPeerConnection(rtcConfig);
+            peerConnections[remoteUserId] = pc;
+
+            // SPEAKER/HOST envoie son audio
+            if ((currentRole === 'host' || currentRole === 'speaker') && localStream) {
+                localStream.getTracks().forEach(track => {
+                    pc.addTrack(track, localStream);
+                    console.log(`🎵 Track audio ajouté pour ${remoteUserId}`);
+                });
+            }
+
+            // LISTENER reçoit l'audio
+            pc.ontrack = (event) => {
+                console.log(`🎵 Audio reçu de ${remoteUserId}`);
+                remoteStreams[remoteUserId] = event.streams[0];
+                playRemoteAudio(event.streams[0], remoteUserId);
+            };
+
+            // ICE candidates
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    db.collection('lives').doc(currentLiveId).collection('signals').add({
+                        from: currentUser.uid,
+                        to: remoteUserId,
+                        type: 'ice-candidate',
+                        candidate: event.candidate.toJSON(),
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    }).catch(err => console.error('❌ Erreur envoi ICE:', err));
+                }
+            };
+
+            pc.onconnectionstatechange = () => {
+                console.log(`🔗 État connexion avec ${remoteUserId}:`, pc.connectionState);
+                updateConnectionStatus();
+            };
+
+            // Créer et envoyer l'offer
+            try {
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+
+                await db.collection('lives').doc(currentLiveId).collection('signals').add({
+                    from: currentUser.uid,
+                    to: remoteUserId,
+                    type: 'offer',
+                    sdp: offer,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                console.log(`✅ Offer envoyée à ${remoteUserId}`);
+            } catch (error) {
+                console.error(`❌ Erreur création offer pour ${remoteUserId}:`, error);
+            }
+        }
+
+        // ============================================
+        // WEBRTC: LECTURE AUDIO DISTANT
+        // ============================================
+        function playRemoteAudio(stream, userId) {
+            let audio = document.getElementById(`audio-${userId}`);
+            
+            if (!audio) {
+                audio = document.createElement('audio');
+                audio.id = `audio-${userId}`;
+                audio.autoplay = true;
+                audio.controls = false;
+                audio.volume = 1.0;
+                document.body.appendChild(audio);
+                console.log(`🔊 Élément audio créé pour ${userId}`);
+            }
+
+            audio.srcObject = stream;
+            
+            audio.play()
+                .then(() => {
+                    console.log(`✅ Audio en lecture pour ${userId}`);
+                })
+                .catch(error => {
+                    console.error(`❌ Erreur lecture audio pour ${userId}:`, error);
+                    
+                    // Retry après interaction utilisateur
+                    const retry = () => {
+                        audio.play()
+                            .then(() => console.log(`✅ Retry réussi pour ${userId}`))
+                            .catch(err => console.error(`❌ Retry échoué:`, err));
+                        document.removeEventListener('click', retry);
+                    };
+                    
+                    document.addEventListener('click', retry, { once: true });
+                    alert('🔊 Clique n\'importe où pour activer l\'audio');
+                });
+        }
+
+        // ============================================
+        // LISTENERS TEMPS RÉEL
+        // ============================================
+        function setupLiveListeners(liveId) {
+            console.log('📡 Configuration des listeners temps réel...');
+
+            // 1️⃣ SIGNALS (WebRTC signaling)
+            const signalsUnsub = db.collection('lives').doc(liveId).collection('signals')
+                .where('to', '==', currentUser.uid)
+                .onSnapshot(snapshot => {
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added') {
+                            handleSignal(change.doc.data(), change.doc.id);
+                        }
+                    });
+                });
+
+            // 2️⃣ PARTICIPANTS
+            const participantsUnsub = db.collection('lives').doc(liveId).collection('participants')
+                .onSnapshot(snapshot => {
+                    updateParticipantsList(snapshot);
+                    
+                    // Détecter nouveaux participants pour connexion auto
+                    snapshot.docChanges().forEach(change => {
+                        if (change.type === 'added') {
+                            const participant = change.doc.data();
+                            
+                            if (participant.userId !== currentUser.uid) {
+                                // Speaker/Host se connecte aux nouveaux listeners
+                                if ((currentRole === 'host' || currentRole === 'speaker') && participant.role === 'listener') {
+                                    setTimeout(() => {
+                                        console.log(`🆕 Nouveau listener: ${participant.pseudo}`);
+                                        createPeerConnection(participant.userId);
+                                    }, 500);
+                                }
+                                
+                                // Listener se connecte aux nouveaux speakers
+                                if (currentRole === 'listener' && (participant.role === 'host' || participant.role === 'speaker')) {
+                                    setTimeout(() => {
+                                        console.log(`🆕 Nouveau speaker: ${participant.pseudo}`);
+                                        createPeerConnection(participant.userId);
+                                    }, 500);
+                                }
+                            }
+                        }
+                        
+                        // Détecter changement listener → speaker
+                        if (change.type === 'modified') {
+                            const participant = change.doc.data();
+                            
+                            if (participant.userId === currentUser.uid && participant.role === 'speaker' && currentRole === 'listener') {
+                                console.log('🎤 Vous êtes maintenant speaker !');
+                                currentRole = 'speaker';
+                                document.getElementById('raise-hand-btn').classList.add('hidden');
+                                document.getElementById('toggle-mic-btn').classList.remove('hidden');
+                                setupLocalAudio().then(() => {
+                                    setTimeout(() => connectToExistingListeners(), 1000);
+                                });
+                            }
+                        }
+                    });
+                });
+
+            // 3️⃣ COMMENTAIRES
+            const commentsUnsub = db.collection('lives').doc(liveId).collection('comments')
+                .orderBy('timestamp', 'desc')
+                .limit(50)
+                .onSnapshot(snapshot => {
+                    updateCommentsList(snapshot);
+                });
+
+            // 4️⃣ LIVE (hearts, status, etc.)
+            const liveUnsub = db.collection('lives').doc(liveId)
+                .onSnapshot(doc => {
+                    const liveData = doc.data();
+                    
+                    document.getElementById('hearts-total').textContent = liveData.totalHearts || 0;
+                    document.getElementById('participants-count').textContent = liveData.currentListeners || 0;
+                    document.getElementById('viewer-count').textContent = liveData.currentListeners || 0;
+                    
+                    if (liveData.status === 'live') {
+                        document.getElementById('live-status-badge').classList.remove('hidden');
+                        document.getElementById('audio-status').textContent = '🔴 EN DIRECT';
+                        document.getElementById('audio-icon').textContent = '🔴';
+                    }
+                    
+                    if (liveData.status === 'ended') {
+                        alert('Le live est terminé');
+                        leaveLive();
+                    }
+                });
+
+            unsubscribers.push(signalsUnsub, participantsUnsub, commentsUnsub, liveUnsub);
+            console.log('✅ Listeners configurés');
+        }
+
+        // ============================================
+        // WEBRTC: TRAITER SIGNAUX
+        // ============================================
+        async function handleSignal(signal, signalId) {
+            const { from, type, sdp, candidate } = signal;
+
+            console.log(`📨 Signal reçu: ${type} de ${from}`);
+
+            let pc = peerConnections[from];
+
+            try {
+                if (type === 'offer') {
+                    if (!pc) {
+                        pc = new RTCPeerConnection(rtcConfig);
+                        peerConnections[from] = pc;
+
+                        // SPEAKER envoie son audio
+                        if ((currentRole === 'host' || currentRole === 'speaker') && localStream) {
+                            localStream.getTracks().forEach(track => {
+                                pc.addTrack(track, localStream);
+                            });
+                        }
+// Listenet
+pc.ontrack = (event) => {
+                            console.log(`🎵 Stream reçu de ${from}`);
+                            remoteStreams[from] = event.streams[0];
+                            playRemoteAudio(event.streams[0], from);
+                        };
+
+                        pc.onicecandidate = (event) => {
+                            if (event.candidate) {
+                                db.collection('lives').doc(currentLiveId).collection('signals').add({
+                                    from: currentUser.uid,
+                                    to: from,
+                                    type: 'ice-candidate',
+                                    candidate: event.candidate.toJSON(),
+                                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                                }).catch(err => console.error('Erreur ICE:', err));
+                            }
+                        };
+
+                        pc.onconnectionstatechange = () => {
+                            console.log(`État: ${pc.connectionState}`);
+                            updateConnectionStatus();
+                        };
+                    }
+
+                    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+                    const answer = await pc.createAnswer();
+                    await pc.setLocalDescription(answer);
+
+                    await db.collection('lives').doc(currentLiveId).collection('signals').add({
+                        from: currentUser.uid,
+                        to: from,
+                        type: 'answer',
+                        sdp: answer,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    console.log(`✅ Answer envoyée à ${from}`);
+
+                } else if (type === 'answer') {
+                    if (pc) {
+                        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+                        console.log(`✅ Answer traitée de ${from}`);
+                    }
+                } else if (type === 'ice-candidate') {
+                    if (pc && candidate) {
+                        await pc.addIceCandidate(new RTCIceCandidate(candidate));
+                    }
+                }
+
+                // Supprimer le signal après traitement
+                db.collection('lives').doc(currentLiveId).collection('signals').doc(signalId).delete().catch(() => {});
+
+            } catch (error) {
+                console.error(`❌ Erreur traitement signal ${type}:`, error);
+            }
+        }
+
+        // ============================================
+        // UI: MISE À JOUR PARTICIPANTS
+        // ============================================
+        function updateParticipantsList(snapshot) {
+            const list = document.getElementById('participants-list');
+            const handsContainer = document.getElementById('hand-raised-list');
+            
+            list.innerHTML = '';
+            handsContainer.innerHTML = '';
+
+            const participants = [];
+            const handsRaised = [];
+
+            snapshot.forEach(doc => {
+                const p = doc.data();
+                participants.push(p);
+
+                if (p.handRaised && currentRole === 'host') {
+                    handsRaised.push(p);
+                }
+            });
+
+            // Afficher participants
+            if (participants.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #999;">Aucun participant</p>';
+            } else {
+                participants.forEach(p => {
+                    const div = document.createElement('div');
+                    div.className = 'participant-item';
+                    
+                    let icon = '';
+                    if (p.role === 'host') icon = '👑';
+                    else if (p.role === 'speaker') icon = '🎤';
+                    else icon = '👤';
+
+                    div.innerHTML = `
+                        <span>${icon} ${p.pseudo}</span>
+                        ${p.handRaised ? '<span class="hand-raised" style="font-size: 1.5em;">✋</span>' : ''}
+                    `;
+                    
+                    list.appendChild(div);
+                });
+            }
+
+            // Afficher demandes de parole pour l'hôte
+            if (currentRole === 'host') {
+                if (handsRaised.length === 0) {
+                    handsContainer.innerHTML = '<p style="text-align: center; color: #999;">Aucune demande</p>';
+                } else {
+                    handsRaised.forEach(p => {
+                        const div = document.createElement('div');
+                        div.className = 'hand-request';
+                        div.innerHTML = `
+                            <p>✋ <strong>${p.pseudo}</strong> demande la parole</p>
+                            <div class="hand-request-buttons">
+                                <button class="btn btn-success" onclick="acceptSpeaker('${p.userId}')">✅ Accepter</button>
+                                <button class="btn btn-danger" onclick="rejectHand('${p.userId}')">❌ Refuser</button>
+                            </div>
+                        `;
+                        handsContainer.appendChild(div);
+                    });
+                }
+            }
+        }
+
+        // ============================================
+        // HÔTE: ACCEPTER SPEAKER
+        // ============================================
+        window.acceptSpeaker = async function(userId) {
+            console.log(`✅ Accepter speaker: ${userId}`);
+            
+            try {
+                await db.collection('lives').doc(currentLiveId).collection('participants').doc(userId).update({
+                    role: 'speaker',
+                    handRaised: false
+                });
+
+                await db.collection('lives').doc(currentLiveId).update({
+                    currentSpeakers: firebase.firestore.FieldValue.arrayUnion(userId)
+                });
+
+                console.log('✅ Speaker accepté');
+            } catch (error) {
+                console.error('❌ Erreur accepter speaker:', error);
+            }
+        };
+
+        // ============================================
+        // HÔTE: REFUSER MAIN LEVÉE
+        // ============================================
+        window.rejectHand = async function(userId) {
+            console.log(`❌ Refuser main: ${userId}`);
+            
+            try {
+                await db.collection('lives').doc(currentLiveId).collection('participants').doc(userId).update({
+                    handRaised: false
+                });
+            } catch (error) {
+                console.error('❌ Erreur refuser main:', error);
+            }
+        };
+
+        // ============================================
+        // UI: MISE À JOUR COMMENTAIRES
+        // ============================================
+        function updateCommentsList(snapshot) {
+            const list = document.getElementById('comments-list');
+            list.innerHTML = '';
+
+            if (snapshot.empty) {
+                list.innerHTML = '<p style="text-align: center; color: #999;">Aucun commentaire</p>';
+                return;
+            }
+
+            snapshot.forEach(doc => {
+                const comment = doc.data();
+                const div = document.createElement('div');
+                div.className = 'comment-item';
+                div.innerHTML = `
+                    <div class="comment-author">${comment.pseudo}</div>
+                    <div>${comment.text}</div>
+                `;
+                list.appendChild(div);
+            });
+
+            list.scrollTop = list.scrollHeight;
+        }
+
+        // ============================================
+        // COMMENTAIRES: ENVOYER
+        // ============================================
+        document.getElementById('send-comment-btn').addEventListener('click', sendComment);
+        document.getElementById('comment-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendComment();
+        });
+
+        async function sendComment() {
+            const input = document.getElementById('comment-input');
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            const now = Date.now();
+            if (now - lastCommentTime < 3000) {
+                alert('⏱️ Attends 3 secondes entre chaque commentaire');
+                return;
+            }
+
+            try {
+                const userDoc = await db.collection('users').doc(currentUser.uid).get();
+                const userData = userDoc.data();
+
+                await db.collection('lives').doc(currentLiveId).collection('comments').add({
+                    userId: currentUser.uid,
+                    pseudo: userData.pseudo,
+                    text: text,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                input.value = '';
+                lastCommentTime = now;
+                console.log('✅ Commentaire envoyé');
+
+            } catch (error) {
+                console.error('❌ Erreur envoi commentaire:', error);
+            }
+        }
+
+        // ============================================
+        // HEARTS: ENVOYER
+        // ============================================
+        document.getElementById('send-heart-btn').addEventListener('click', async () => {
+            const now = Date.now();
+            if (now - lastHeartTime < 1000) return;
+
+            try {
+                await db.collection('lives').doc(currentLiveId).update({
+                    totalHearts: firebase.firestore.FieldValue.increment(1)
+                });
+
+                lastHeartTime = now;
+
+                const btn = document.getElementById('send-heart-btn');
+                btn.style.transform = 'scale(1.3)';
+                setTimeout(() => btn.style.transform = 'scale(1)', 200);
+
+                console.log('❤️ Heart envoyé');
+
+            } catch (error) {
+                console.error('❌ Erreur envoi heart:', error);
+            }
+        });
+
+        // ============================================
+        // CONTRÔLES LIVE
+        // ============================================
+
+        // DÉMARRER LE LIVE (hôte uniquement)
+        document.getElementById('start-live-btn').addEventListener('click', async () => {
+            try {
+                await db.collection('lives').doc(currentLiveId).update({
+                    status: 'live',
+                    startedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                document.getElementById('start-live-btn').classList.add('hidden');
+                console.log('✅ Live démarré');
+
+            } catch (error) {
+                console.error('❌ Erreur démarrage live:', error);
+            }
+        });
+
+        // MUTE/UNMUTE MICRO
+        let isMuted = false;
+        document.getElementById('toggle-mic-btn').addEventListener('click', () => {
+            if (!localStream) return;
+
+            isMuted = !isMuted;
+            localStream.getAudioTracks().forEach(track => {
+                track.enabled = !isMuted;
+            });
+
+            const btn = document.getElementById('toggle-mic-btn');
+            btn.textContent = isMuted ? '🔇 Unmute' : '🎤 Mute';
+            document.getElementById('audio-icon').textContent = isMuted ? '🔇' : '🎤';
+
+            console.log(isMuted ? '🔇 Micro coupé' : '🎤 Micro activé');
+        });
+
+        // LEVER LA MAIN (listener uniquement)
+        document.getElementById('raise-hand-btn').addEventListener('click', async () => {
+            try {
+                const doc = await db.collection('lives').doc(currentLiveId).collection('participants').doc(currentUser.uid).get();
+                const currentHandRaised = doc.data().handRaised;
+
+                await db.collection('lives').doc(currentLiveId).collection('participants').doc(currentUser.uid).update({
+                    handRaised: !currentHandRaised
+                });
+
+                const btn = document.getElementById('raise-hand-btn');
+                btn.textContent = !currentHandRaised ? '✋ Main levée' : '✋ Demander la parole';
+
+                console.log(!currentHandRaised ? '✋ Main levée' : '👋 Main baissée');
+
+            } catch (error) {
+                console.error('❌ Erreur lever main:', error);
+            }
+        });
+
+        // QUITTER LE LIVE
+        document.getElementById('leave-live-btn').addEventListener('click', () => {
+            if (confirm('Quitter le live ?')) {
+                leaveLive();
+            }
+        });
+
+        async function leaveLive() {
+            console.log('👋 Quitter le live...');
+
+            try {
+                // Fermer connexions WebRTC
+                Object.values(peerConnections).forEach(pc => pc.close());
+                peerConnections = {};
+
+                // Arrêter stream local
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                    localStream = null;
+                }
+
+                // Supprimer éléments audio
+                Object.keys(remoteStreams).forEach(userId => {
+                    const audio = document.getElementById(`audio-${userId}`);
+                    if (audio) audio.remove();
+                });
+                remoteStreams = {};
+
+                // Supprimer de Firestore
+                if (currentLiveId && currentUser) {
+                    await db.collection('lives').doc(currentLiveId).collection('participants').doc(currentUser.uid).delete();
+
+                    await db.collection('lives').doc(currentLiveId).update({
+                        currentListeners: firebase.firestore.FieldValue.increment(-1)
+                    });
+
+                    // Si hôte, terminer le live
+                    if (currentRole === 'host') {
+                        await db.collection('lives').doc(currentLiveId).update({
+                            status: 'ended',
+                            endedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+
+                // Désabonner listeners
+                unsubscribers.forEach(unsub => unsub());
+                unsubscribers = [];
+
+                currentLiveId = null;
+                currentRole = null;
+
+                showScreen('home-screen');
+                console.log('✅ Live quitté');
+
+            } catch (error) {
+                console.error('❌ Erreur leave live:', error);
+                showScreen('home-screen');
+            }
+        }
+
+        // ============================================
+        // UI: STATUT CONNEXION
+        // ============================================
+        function updateConnectionStatus() {
+            const statusDiv = document.getElementById('connection-status');
+            const connected = Object.values(peerConnections).filter(
+                pc => pc.connectionState === 'connected'
+            ).length;
+
+            if (connected > 0) {
+                statusDiv.className = 'status-online';
+                statusDiv.textContent
