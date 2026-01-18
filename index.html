@@ -1638,4 +1638,62 @@ pc.ontrack = (event) => {
 
             if (connected > 0) {
                 statusDiv.className = 'status-online';
-                statusDiv.textContent
+                statusDiv.textContent = `🟢 ${connected} connexion(s) active(s)`;
+                statusDiv.classList.remove('hidden');
+            } else if (Object.keys(peerConnections).length > 0) {
+                statusDiv.className = 'status-offline';
+                statusDiv.textContent = '🟡 Connexion en cours...';
+                statusDiv.classList.remove('hidden');
+            } else {
+                statusDiv.classList.add('hidden');
+            }
+        }
+
+        // ============================================
+        // MEDIA SESSION API (audio en arrière-plan)
+        // ============================================
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: 'SIS Live Audio',
+                artist: 'Say It Safely',
+                artwork: [
+                    { src: 'https://via.placeholder.com/512', sizes: '512x512', type: 'image/png' }
+                ]
+            });
+        }
+
+        // ============================================
+        // CLEANUP AVANT FERMETURE PAGE
+        // ============================================
+        window.addEventListener('beforeunload', () => {
+            if (currentLiveId) {
+                // Nettoyage synchrone rapide
+                if (currentUser) {
+                    db.collection('lives').doc(currentLiveId).collection('participants').doc(currentUser.uid).delete();
+                    db.collection('lives').doc(currentLiveId).update({
+                        currentListeners: firebase.firestore.FieldValue.increment(-1)
+                    });
+                }
+            }
+        });
+
+        // ============================================
+        // GESTION ERREURS GLOBALES
+        // ============================================
+        window.addEventListener('error', (e) => {
+            console.error('❌ Erreur globale:', e.error);
+        });
+
+        window.addEventListener('unhandledrejection', (e) => {
+            console.error('❌ Promise rejetée:', e.reason);
+        });
+
+        // ============================================
+        // INITIALISATION
+        // ============================================
+        console.log('🎙️ SIS - Say It Safely initialisé');
+        console.log('📅 Version: 2.0.0');
+        console.log('🔥 Firebase connecté');
+    </script>
+</body>
+</html>
