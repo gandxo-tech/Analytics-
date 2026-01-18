@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIS - Say It Safely | Live Audio</title>
+    <title>SIS - Say It Safely</title>
     <style>
         * {
             margin: 0;
@@ -12,10 +12,9 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #333;
         }
 
         .container {
@@ -32,13 +31,7 @@
 
         header h1 {
             font-size: 3em;
-            margin-bottom: 10px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        header p {
-            font-size: 1.2em;
-            opacity: 0.9;
         }
 
         .card {
@@ -59,30 +52,12 @@
             font-weight: 600;
         }
 
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: #f093fb;
-            color: white;
-        }
-
-        .btn-danger {
-            background: #f56565;
-            color: white;
-        }
-
-        .btn-success {
-            background: #48bb78;
-            color: white;
-        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #f093fb; color: white; }
+        .btn-danger { background: #f56565; color: white; }
+        .btn-success { background: #48bb78; color: white; }
+        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .form-group {
             margin-bottom: 20px;
@@ -92,11 +67,9 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #555;
         }
 
-        .form-group input,
-        .form-group select {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 12px;
             border: 2px solid #e2e8f0;
@@ -109,15 +82,44 @@
             border-color: #667eea;
         }
 
+        .hidden { display: none !important; }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
         .user-info {
             background: #f7fafc;
             padding: 15px;
             border-radius: 8px;
-            margin-bottom: 20px;
         }
 
-        .user-info p {
-            margin: 5px 0;
+        .user-info p { margin: 5px 0; }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
         }
 
         .lives-grid {
@@ -133,16 +135,17 @@
             border-radius: 12px;
             padding: 20px;
             transition: all 0.3s;
+            cursor: pointer;
         }
 
         .live-card:hover {
             border-color: #667eea;
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
 
         .live-card h3 {
-            color: #667eea;
+            color: #333;
             margin-bottom: 10px;
         }
 
@@ -154,6 +157,7 @@
             border-radius: 20px;
             font-size: 0.85em;
             margin-bottom: 10px;
+            font-weight: 600;
         }
 
         .live-card .status.waiting {
@@ -162,7 +166,7 @@
 
         .live-interface {
             display: grid;
-            grid-template-columns: 1fr 300px;
+            grid-template-columns: 1fr 350px;
             gap: 20px;
         }
 
@@ -174,14 +178,28 @@
 
         .audio-controls {
             text-align: center;
-            padding: 30px;
-            background: #f7fafc;
+            padding: 40px 30px;
+            background: linear-gradient(135deg, #f7fafc 0%, #e2e8f0 100%);
             border-radius: 12px;
+            margin-bottom: 20px;
         }
 
         .audio-icon {
-            font-size: 80px;
+            font-size: 100px;
             margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .audio-status {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #667eea;
         }
 
         .participants-list {
@@ -195,13 +213,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: background 0.3s;
+        }
+
+        .participant-item:hover {
+            background: #f7fafc;
         }
 
         .comments-section {
             background: white;
             border-radius: 12px;
             padding: 20px;
-            margin-top: 20px;
         }
 
         .comments-list {
@@ -219,12 +241,25 @@
             background: white;
             border-radius: 8px;
             border-left: 3px solid #667eea;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .comment-author {
             font-weight: 600;
             color: #667eea;
             margin-bottom: 4px;
+            font-size: 0.9em;
         }
 
         .comment-input {
@@ -232,27 +267,19 @@
             gap: 10px;
         }
 
-        .comment-input input {
+        .comment-input input { 
             flex: 1;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
         }
 
         .hearts-count {
-            font-size: 2em;
+            font-size: 2.5em;
             color: #f56565;
             text-align: center;
             margin: 20px 0;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-
-        .hidden {
-            display: none !important;
+            font-weight: 700;
         }
 
         #connection-status {
@@ -267,47 +294,17 @@
             z-index: 1000;
         }
 
-        .status-online {
-            color: #48bb78;
-        }
-
-        .status-offline {
-            color: #f56565;
-        }
+        .status-online { color: #48bb78; }
+        .status-offline { color: #f56565; }
 
         .hand-raised {
-            animation: pulse 1s infinite;
+            animation: wave 1s ease-in-out infinite;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .tab-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            background: #e2e8f0;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .tab-btn.active {
-            background: #667eea;
-            color: white;
-        }
-
-        small {
-            color: #718096;
-            font-size: 0.85em;
+        @keyframes wave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(20deg); }
+            75% { transform: rotate(-20deg); }
         }
 
         .live-indicator {
@@ -320,6 +317,7 @@
             border-radius: 20px;
             font-size: 0.9em;
             font-weight: 600;
+            margin-left: 10px;
         }
 
         .live-indicator::before {
@@ -336,11 +334,42 @@
             50% { opacity: 0.3; }
         }
 
-        .viewer-count {
+        small {
+            color: #718096;
+            font-size: 0.85em;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .host-controls-card {
+            margin-top: 20px;
+        }
+
+        .hand-request {
+            padding: 15px;
+            background: #fff5f5;
+            border: 2px solid #feb2b2;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .hand-request p {
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .hand-request-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .viewer-badge {
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            color: #666;
+            padding: 4px 10px;
+            background: #e2e8f0;
+            border-radius: 15px;
             font-size: 0.9em;
         }
     </style>
@@ -354,91 +383,100 @@
             <p>Say It Safely - Live Audio Anonyme</p>
         </header>
 
-        <!-- AUTH SCREEN -->
+        <!-- ========================================== -->
+        <!-- ÉCRAN: AUTHENTIFICATION -->
+        <!-- ========================================== -->
         <div id="auth-screen" class="card">
             <div class="tab-buttons">
                 <button class="tab-btn active" onclick="switchAuthTab('login')">Connexion</button>
                 <button class="tab-btn" onclick="switchAuthTab('signup')">Inscription</button>
             </div>
 
+            <!-- LOGIN -->
             <div id="login-tab">
-                <h2>Connexion</h2>
+                <h2 style="margin-bottom: 20px;">Connexion</h2>
                 <form id="login-form">
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" id="login-email" placeholder="ton-email@example.com" required>
+                        <input type="email" id="login-email" placeholder="exemple@email.com" required autocomplete="email">
                     </div>
                     <div class="form-group">
                         <label>Mot de passe</label>
-                        <input type="password" id="login-password" placeholder="••••••••" required>
+                        <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
                     </div>
-                    <button type="submit" class="btn btn-primary">Se connecter</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Se connecter</button>
                 </form>
             </div>
 
+            <!-- SIGNUP -->
             <div id="signup-tab" class="hidden">
-                <h2>Inscription</h2>
+                <h2 style="margin-bottom: 20px;">Inscription</h2>
                 <form id="signup-form">
                     <div class="form-group">
                         <label>Pseudo</label>
-                        <input type="text" id="signup-pseudo" placeholder="VoixLibre123" required maxlength="20" pattern="[a-zA-Z0-9_]+">
-                        <small>Uniquement lettres, chiffres et underscore (3-20 caractères)</small>
+                        <input type="text" id="signup-pseudo" placeholder="VoixLibre123" required maxlength="20" autocomplete="username">
+                        <small>3-20 caractères : lettres, chiffres et underscore uniquement</small>
                     </div>
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" id="signup-email" placeholder="ton-email@example.com" required>
+                        <input type="email" id="signup-email" placeholder="exemple@email.com" required autocomplete="email">
                     </div>
                     <div class="form-group">
                         <label>Mot de passe</label>
-                        <input type="password" id="signup-password" placeholder="••••••••" required minlength="6">
+                        <input type="password" id="signup-password" placeholder="••••••••" required minlength="6" autocomplete="new-password">
                         <small>Minimum 6 caractères</small>
                     </div>
                     <div class="form-group">
-                        <label>Confirmer mot de passe</label>
-                        <input type="password" id="signup-password-confirm" placeholder="••••••••" required>
+                        <label>Confirmer le mot de passe</label>
+                        <input type="password" id="signup-password-confirm" placeholder="••••••••" required autocomplete="new-password">
                     </div>
-                    <button type="submit" class="btn btn-success">Créer un compte</button>
+                    <button type="submit" class="btn btn-success" style="width: 100%;">Créer un compte</button>
                 </form>
             </div>
         </div>
 
-        <!-- HOME SCREEN -->
+        <!-- ========================================== -->
+        <!-- ÉCRAN: ACCUEIL -->
+        <!-- ========================================== -->
         <div id="home-screen" class="hidden">
             <div class="card user-info">
-                <p>👤 Pseudo: <strong id="user-pseudo"></strong></p>
-                <p>📧 Email: <strong id="user-email"></strong></p>
+                <p>👤 Pseudo: <strong id="user-pseudo">-</strong></p>
+                <p>📧 Email: <strong id="user-email">-</strong></p>
                 <p>⭐ Trust Score: <strong id="trust-score">0</strong></p>
                 <p>📊 Lives hébergés: <strong id="lives-hosted">0</strong></p>
             </div>
 
             <div class="card">
-                <h2>Actions</h2>
+                <h2 style="margin-bottom: 20px;">Actions</h2>
                 <div class="action-buttons">
                     <button id="create-live-btn" class="btn btn-primary">🎙️ Créer un Live</button>
-                    <button id="join-code-btn" class="btn btn-secondary">🔗 Rejoindre par code</button>
                     <button id="logout-btn" class="btn btn-danger">🚪 Déconnexion</button>
                 </div>
             </div>
 
             <div class="card">
-                <h2>Lives en cours</h2>
-                <div id="lives-grid" class="lives-grid"></div>
+                <h2 style="margin-bottom: 20px;">Lives en cours</h2>
+                <div id="lives-grid" class="lives-grid">
+                    <p style="text-align: center; color: #999;">Chargement...</p>
+                </div>
             </div>
         </div>
 
-        <!-- CREATE LIVE SCREEN -->
+        <!-- ========================================== -->
+        <!-- ÉCRAN: CRÉER UN LIVE -->
+        <!-- ========================================== -->
         <div id="create-live-screen" class="hidden">
             <div class="card">
-                <h2>Créer un nouveau Live</h2>
+                <h2 style="margin-bottom: 20px;">Créer un nouveau Live</h2>
                 <form id="create-live-form">
                     <div class="form-group">
                         <label>Titre du live</label>
-                        <input type="text" id="live-title" placeholder="Ex: Discussion ouverte sur..." required maxlength="100">
+                        <input type="text" id="live-title" placeholder="Ex: Discussion sur la musique africaine 🎵" required maxlength="100">
                     </div>
 
                     <div class="form-group">
                         <label>
-                            <input type="checkbox" id="is-public" checked>
+                            <input type="checkbox" id="is-public" checked style="width: auto; margin-right: 8px;">
                             Live public (visible par tous)
                         </label>
                     </div>
@@ -446,43 +484,46 @@
                     <div class="form-group">
                         <label>Limite d'auditeurs</label>
                         <select id="max-listeners">
-                            <option value="0">Illimité (non recommandé)</option>
                             <option value="5">5 personnes</option>
                             <option value="10" selected>10 personnes (recommandé)</option>
                             <option value="15">15 personnes (maximum)</option>
                         </select>
-                        <small>⚠️ Au-delà de 15, la qualité audio peut être affectée</small>
+                        <small>⚠️ Au-delà de 15 personnes, la qualité audio peut être affectée</small>
                     </div>
 
                     <div class="action-buttons">
-                        <button type="submit" class="btn btn-success">Créer et Démarrer</button>
-                        <button type="button" id="cancel-create-btn" class="btn btn-secondary">Annuler</button>
+                        <button type="submit" class="btn btn-success">✅ Créer et Démarrer</button>
+                        <button type="button" id="cancel-create-btn" class="btn btn-secondary">❌ Annuler</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- LIVE SCREEN -->
+        <!-- ========================================== -->
+        <!-- ÉCRAN: LIVE EN COURS -->
+        <!-- ========================================== -->
         <div id="live-screen" class="hidden">
             <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-                    <div>
-                        <h2 id="live-title-display"></h2>
-                        <p id="live-host-display"></p>
-                        <div style="margin-top: 10px;">
+                <!-- En-tête du live -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                    <div style="flex: 1; min-width: 250px;">
+                        <h2 id="live-title-display" style="margin-bottom: 10px;">-</h2>
+                        <p id="live-host-display" style="color: #666; margin-bottom: 10px;">-</p>
+                        <div>
                             <span id="live-status-badge" class="live-indicator hidden">LIVE</span>
-                            <span class="viewer-count">👁️ <span id="viewer-count">0</span> spectateurs</span>
+                            <span class="viewer-badge">👁️ <span id="viewer-count">0</span> spectateurs</span>
                         </div>
                     </div>
-                    <button id="leave-live-btn" class="btn btn-danger">Quitter</button>
+                    <button id="leave-live-btn" class="btn btn-danger">Quitter le Live</button>
                 </div>
 
                 <div class="live-interface">
+                    <!-- Colonne principale -->
                     <div>
-                        <!-- Audio Controls -->
+                        <!-- Contrôles audio -->
                         <div class="audio-controls">
                             <div class="audio-icon" id="audio-icon">🎤</div>
-                            <h3 id="audio-status">En attente...</h3>
+                            <div class="audio-status" id="audio-status">En attente...</div>
                             <div class="action-buttons">
                                 <button id="toggle-mic-btn" class="btn btn-primary hidden">🎤 Mute</button>
                                 <button id="raise-hand-btn" class="btn btn-secondary hidden">✋ Demander la parole</button>
@@ -494,14 +535,16 @@
                         <div class="hearts-count">
                             ❤️ <span id="hearts-total">0</span>
                         </div>
-                        <div style="text-align: center;">
+                        <div style="text-align: center; margin-bottom: 20px;">
                             <button id="send-heart-btn" class="btn btn-primary">Envoyer un ❤️</button>
                         </div>
 
-                        <!-- Comments -->
+                        <!-- Commentaires -->
                         <div class="comments-section">
-                            <h3>💬 Commentaires</h3>
-                            <div class="comments-list" id="comments-list"></div>
+                            <h3 style="margin-bottom: 15px;">💬 Commentaires</h3>
+                            <div class="comments-list" id="comments-list">
+                                <p style="text-align: center; color: #999;">Aucun commentaire</p>
+                            </div>
                             <div class="comment-input">
                                 <input type="text" id="comment-input" placeholder="Écris un commentaire..." maxlength="200">
                                 <button id="send-comment-btn" class="btn btn-primary">Envoyer</button>
@@ -509,17 +552,22 @@
                         </div>
                     </div>
 
-                    <!-- Participants Sidebar -->
+                    <!-- Colonne latérale -->
                     <div>
-                        <div class="card">
-                            <h3>👥 Participants (<span id="participants-count">0</span>)</h3>
-                            <div class="participants-list" id="participants-list"></div>
+                        <!-- Participants -->
+                        <div class="card" style="padding: 20px;">
+                            <h3 style="margin-bottom: 15px;">👥 Participants (<span id="participants-count">0</span>)</h3>
+                            <div class="participants-list" id="participants-list">
+                                <p style="text-align: center; color: #999;">Chargement...</p>
+                            </div>
                         </div>
 
-                        <!-- Host Controls -->
-                        <div id="host-controls" class="card hidden">
-                            <h3>⚙️ Contrôles Hôte</h3>
-                            <div id="hand-raised-list"></div>
+                        <!-- Contrôles hôte -->
+                        <div id="host-controls" class="card host-controls-card hidden" style="padding: 20px;">
+                            <h3 style="margin-bottom: 15px;">⚙️ Contrôles Hôte</h3>
+                            <div id="hand-raised-list">
+                                <p style="text-align: center; color: #999;">Aucune demande</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -537,906 +585,4 @@
         // CONFIGURATION FIREBASE
         // ============================================
         const firebaseConfig = {
-            apiKey: "AIzaSyDHCqPBzhWNnXuBrLvfa4NqCFeOdIRy6UI",
-            authDomain: "gandxo-analytics.firebaseapp.com",
-            projectId: "gandxo-analytics",
-            storageBucket: "gandxo-analytics.firebasestorage.app",
-            messagingSenderId: "660347922907",
-            appId: "1:660347922907:web:652a37718edae658561ffe"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        // ============================================
-        // VARIABLES GLOBALES
-        // ============================================
-        let currentUser = null;
-        let currentLiveId = null;
-        let currentRole = null;
-        let peerConnections = {};
-        let localStream = null;
-        let remoteStreams = {};
-        let unsubscribers = [];
-        let lastCommentTime = 0;
-        let lastHeartTime = 0;
-
-        const rtcConfig = {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' }
-            ]
-        };
-
-        // ============================================
-        // NAVIGATION
-        // ============================================
-        function showScreen(screenId) {
-            ['auth-screen', 'home-screen', 'create-live-screen', 'live-screen'].forEach(id => {
-                document.getElementById(id).classList.add('hidden');
-            });
-            document.getElementById(screenId).classList.remove('hidden');
-        }
-
-        function switchAuthTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            
-            if (tab === 'login') {
-                document.querySelector('.tab-btn:first-child').classList.add('active');
-                document.getElementById('login-tab').classList.remove('hidden');
-                document.getElementById('signup-tab').classList.add('hidden');
-            } else {
-                document.querySelector('.tab-btn:last-child').classList.add('active');
-                document.getElementById('login-tab').classList.add('hidden');
-                document.getElementById('signup-tab').classList.remove('hidden');
-            }
-        }
-
-        // ============================================
-        // AUTHENTIFICATION
-        // ============================================
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const password = document.getElementById('login-password').value;
-
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-            } catch (error) {
-                alert('Erreur: ' + error.message);
-            }
-        });
-
-        document.getElementById('signup-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const pseudo = document.getElementById('signup-pseudo').value.trim();
-            const email = document.getElementById('signup-email').value.trim();
-            const password = document.getElementById('signup-password').value;
-            const passwordConfirm = document.getElementById('signup-password-confirm').value;
-
-            if (!/^[a-zA-Z0-9_]{3,20}$/.test(pseudo)) {
-                alert('Pseudo invalide !');
-                return;
-            }
-            if (password !== passwordConfirm) {
-                alert('Les mots de passe ne correspondent pas');
-                return;
-            }
-
-            try {
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                await db.collection('users').doc(userCredential.user.uid).set({
-                    userId: userCredential.user.uid,
-                    pseudo: pseudo,
-                    email: email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    trustScore: 0,
-                    totalLivesHosted: 0,
-                    totalLivesAttended: 0,
-                    isBanned: false
-                });
-                alert('Compte créé avec succès !');
-            } catch (error) {
-                alert('Erreur: ' + error.message);
-            }
-        });
-
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    document.getElementById('user-pseudo').textContent = userData.pseudo;
-                    document.getElementById('user-email').textContent = user.email;
-                    document.getElementById('trust-score').textContent = userData.trustScore || 0;
-                    document.getElementById('lives-hosted').textContent = userData.totalLivesHosted || 0;
-                    
-                    showScreen('home-screen');
-                    loadPublicLives();
-                }
-            } else {
-                currentUser = null;
-                showScreen('auth-screen');
-            }
-        });
-
-        document.getElementById('logout-btn').addEventListener('click', async () => {
-            if (confirm('Se déconnecter ?')) {
-                await auth.signOut();
-            }
-        });
-
-        // ============================================
-        // CREATE LIVE
-        // ============================================
-        document.getElementById('create-live-btn').addEventListener('click', () => {
-            showScreen('create-live-screen');
-        });
-
-        document.getElementById('cancel-create-btn').addEventListener('click', () => {
-            showScreen('home-screen');
-        });
-
-        document.getElementById('create-live-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const title = document.getElementById('live-title').value.trim();
-            const isPublic = document.getElementById('is-public').checked;
-            const maxListeners = parseInt(document.getElementById('max-listeners').value);
-
-            try {
-                const userDoc = await db.collection('users').doc(currentUser.uid).get();
-                const userData = userDoc.data();
-
-                const liveRef = await db.collection('lives').add({
-                    hostId: currentUser.uid,
-                    hostPseudo: userData.pseudo,
-                    title: title,
-                    isPublic: isPublic,
-                    maxListeners: maxListeners || null,
-                    status: 'waiting',
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    startedAt: null,
-                    endedAt: null,
-                    currentListeners: 0,
-                    currentSpeakers: [currentUser.uid],
-                    totalHearts: 0
-                });
-
-                await db.collection('users').doc(currentUser.uid).update({
-                    totalLivesHosted: firebase.firestore.FieldValue.increment(1)
-                });
-
-                joinLiveRoom(liveRef.id, 'host');
-            } catch (error) {
-                alert('Erreur: ' + error.message);
-            }
-        });
-
-        // ============================================
-        // LIVES LIST
-        // ============================================
-        function loadPublicLives() {
-            const unsubscribe = db.collection('lives')
-                .where('isPublic', '==', true)
-                .where('status', 'in', ['waiting', 'live'])
-                .orderBy('createdAt', 'desc')
-                .limit(20)
-                .onSnapshot(snapshot => {
-                    const container = document.getElementById('lives-grid');
-                    container.innerHTML = '';
-
-                    if (snapshot.empty) {
-                        container.innerHTML = '<p style="text-align:center; color:#999;">Aucun live en cours</p>';
-                        return;
-                    }
-
-                    snapshot.forEach(doc => {
-                        const live = doc.data();
-                        const liveCard = document.createElement('div');
-                        liveCard.className = 'live-card';
-                        
-                        const isFull = live.maxListeners && live.currentListeners >= live.maxListeners;
-                        const statusClass = live.status === 'live' ? 'status' : 'status waiting';
-                        const statusText = live.status === 'live' ? '🔴 EN DIRECT' : '⏳ En attente';
-                        
-                        liveCard.innerHTML = `
-                            <div class="${statusClass}">${statusText}</div>
-                            <h3>${live.title}</h3>
-                            <p><strong>Hôte:</strong> ${live.hostPseudo}</p>
-                            <p>👁️ ${live.currentListeners || 0} ${live.maxListeners ? '/ ' + live.maxListeners : ''} spectateurs</p>
-                            <p>❤️ ${live.totalHearts || 0} hearts</p>
-                            ${isFull ? '<p style="color: red;">COMPLET</p>' : ''}
-                            <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" ${isFull ? 'disabled' : ''} 
-                                    onclick="joinLiveRoom('${doc.id}', 'listener')">
-                                ${isFull ? 'Complet' : 'Rejoindre'}
-                            </button>
-                        `;
-                        
-                        container.appendChild(liveCard);
-                    });
-                });
-
-            unsubscribers.push(unsubscribe);
-        }
-
-        document.getElementById('join-code-btn').addEventListener('click', () => {
-            const code = prompt('Entre le code du live:');
-            if (code) {
-                joinLiveRoom(code.trim(), 'listener');
-            }
-        });
-
-        // ============================================
-        // JOIN LIVE ROOM
-        // ============================================
-        async function joinLiveRoom(liveId, role) {
-            currentLiveId = liveId;
-            currentRole = role;
-
-            try {
-                const liveDoc = await db.collection('lives').doc(liveId).get();
-                
-                if (!liveDoc.exists) {
-                    alert('Live introuvable');
-                    return;
-                }
-
-                const liveData = liveDoc.data();
-
-                if (role === 'listener' && liveData.maxListeners) {
-                    if (liveData.currentListeners >= liveData.maxListeners) {
-                        alert('Ce live est complet');
-                        return;
-                    }
-                }
-
-                showScreen('live-screen');
-                document.getElementById('live-title-display').textContent = liveData.title;
-                document.getElementById('live-host-display').textContent = `Hôte: ${liveData.hostPseudo}`;
-
-                if (liveData.status === 'live') {
-                    document.getElementById('live-status-badge').classList.remove('hidden');
-                }
-
-                const userDoc = await db.collection('users').doc(currentUser.uid).get();
-                const userData = userDoc.data();
-
-                await db.collection('lives').doc(liveId).collection('participants').doc(currentUser.uid).set({
-                    userId: currentUser.uid,
-                    pseudo: userData.pseudo,
-                    role: role,
-                    joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    handRaised: false,
-                    isMuted: false,
-                    streamId: null
-                });
-
-                await db.collection('lives').doc(liveId).update({
-                    currentListeners: firebase.firestore.FieldValue.increment(1)
-                });
-
-                await db.collection('users').doc(currentUser.uid).update({
-                    totalLivesAttended: firebase.firestore.FieldValue.increment(1)
-                });
-
-                if (role === 'host') {
-                    document.getElementById('start-live-btn').classList.remove('hidden');
-                    document.getElementById('toggle-mic-btn').classList.remove('hidden');
-                    document.getElementById('host-controls').classList.remove('hidden');
-                    await setupLocalAudio();
-                } else if (role === 'speaker') {
-                    document.getElementById('toggle-mic-btn').classList.remove('hidden');
-                    await setupLocalAudio();
-                } else {
-                    document.getElementById('raise-hand-btn').classList.remove('hidden');
-                }
-
-                setupLiveListeners(liveId);
-                
-                // LISTENER se connecte automatiquement aux speakers
-                if (role === 'listener') {
-                    connectToExistingSpeakers();
-                }
-
-            } catch (error) {
-                console.error('Erreur join live:', error);
-                alert('Erreur: ' + error.message);
-                showScreen('home-screen');
-            }
-        }
-
-        // ============================================
-        // SETUP AUDIO
-        // ============================================
-        async function setupLocalAudio() {
-            try {
-                localStream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true
-                    } 
-                });
-                
-                document.getElementById('audio-status').textContent = '🎤 Micro activé';
-                document.getElementById('audio-icon').textContent = '🎤';
-                
-                // Connecter aux listeners existants
-                if (currentRole === 'host' || currentRole === 'speaker') {
-                    connectToExistingListeners();
-                }
-                
-            } catch (error) {
-                console.error('Erreur accès micro:', error);
-                alert('Impossible d\'accéder au microphone. Vérifie les permissions.');
-            }
-        }
-
-        // ============================================
-        // CONNEXION AUTOMATIQUE AUX SPEAKERS (LISTENERS)
-        // ============================================
-        async function connectToExistingSpeakers() {
-            const participantsSnapshot = await db.collection('lives').doc(currentLiveId).collection('participants')
-                .where('role', 'in', ['host', 'speaker'])
-                .get();
-            
-            participantsSnapshot.forEach(doc => {
-                const participant = doc.data();
-                if (participant.userId !== currentUser.uid) {
-                    console.log('Listener se connecte au speaker:', participant.pseudo);
-                    createPeerConnection(participant.userId, 'listener');
-                }
-            });
-        }
-
-        // ============================================
-        // CONNEXION AUTOMATIQUE AUX LISTENERS (SPEAKERS)
-        // ============================================
-        async function connectToExistingListeners() {
-            const participantsSnapshot = await db.collection('lives').doc(currentLiveId).collection('participants')
-                .where('role', '==', 'listener')
-                .get();
-            
-            participantsSnapshot.forEach(doc => {
-                const participant = doc.data();
-                if (participant.userId !== currentUser.uid) {
-                    console.log('Speaker se connecte au listener:', participant.pseudo);
-                    createPeerConnection(participant.userId, 'speaker');
-                }
-            });
-        }
-
-        // ============================================
-        // WEBRTC - CRÉATION PEER CONNECTION
-        // ============================================
-        async function createPeerConnection(remoteUserId, initiatorRole) {
-            if (peerConnections[remoteUserId]) {
-                console.log('Connexion déjà existante avec', remoteUserId);
-                return;
-            }
-
-            const pc = new RTCPeerConnection(rtcConfig);
-            peerConnections[remoteUserId] = pc;
-
-            // SPEAKER envoie son audio
-            if ((currentRole === 'host' || currentRole === 'speaker') && localStream) {
-                localStream.getTracks().forEach(track => {
-                    pc.addTrack(track, localStream);
-                });
-                console.log('Audio local ajouté pour', remoteUserId);
-            }
-
-            // LISTENER reçoit l'audio
-            pc.ontrack = (event) => {
-                console.log('Stream audio reçu de', remoteUserId);
-                remoteStreams[remoteUserId] = event.streams[0];
-                playRemoteAudio(event.streams[0], remoteUserId);
-            };
-
-            pc.onicecandidate = (event) => {
-                if (event.candidate) {
-                    db.collection('lives').doc(currentLiveId).collection('signals').add({
-                        from: currentUser.uid,
-                        to: remoteUserId,
-                        type: 'ice-candidate',
-                        candidate: event.candidate.toJSON(),
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
-            };
-
-            pc.onconnectionstatechange = () => {
-                console.log('État connexion avec', remoteUserId, ':', pc.connectionState);
-                updateConnectionStatus();
-            };
-
-            // Créer offer
-            const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-
-            await db.collection('lives').doc(currentLiveId).collection('signals').add({
-                from: currentUser.uid,
-                to: remoteUserId,
-                type: 'offer',
-                sdp: offer,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            console.log('Offer envoyée à', remoteUserId);
-        }
-
-        function playRemoteAudio(stream, userId) {
-            let audio = document.getElementById(`audio-${userId}`);
-            
-            if (!audio) {
-                audio = document.createElement('audio');
-                audio.id = `audio-${userId}`;
-                audio.autoplay = true;
-                audio.controls = false;
-                audio.volume = 1.0;
-                document.body.appendChild(audio);
-            }
-
-            audio.srcObject = stream;
-            audio.play().catch(e => {
-                console.error('Erreur lecture audio:', e);
-                // Retry après interaction utilisateur
-                document.body.addEventListener('click', () => {
-                    audio.play().catch(err => console.error('Retry failed:', err));
-                }, { once: true });
-            });
-        }
-
-        // ============================================
-        // SIGNALING LISTENER
-        // ============================================
-        function setupLiveListeners(liveId) {
-            // Écouter les signaux WebRTC
-            const signalsUnsubscribe = db.collection('lives').doc(liveId).collection('signals')
-                .where('to', '==', currentUser.uid)
-                .onSnapshot(snapshot => {
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === 'added') {
-                            handleSignal(change.doc.data(), change.doc.id);
-                        }
-                    });
-                });
-
-            // Écouter les participants
-            const participantsUnsubscribe = db.collection('lives').doc(liveId).collection('participants')
-                .onSnapshot(snapshot => {
-                    updateParticipantsList(snapshot);
-                    
-                    // Détecter nouveaux speakers/listeners pour connexion auto
-                    snapshot.docChanges().forEach(change => {
-                        if (change.type === 'added' || (change.type === 'modified' && change.doc.data().role !== change.doc.data().previousRole)) {
-                            const participant = change.doc.data();
-                            
-                            if (participant.userId !== currentUser.uid) {
-                                // Si je suis speaker et qu'un listener rejoint
-                                if ((currentRole === 'host' || currentRole === 'speaker') && participant.role === 'listener') {
-                                    console.log('Nouveau listener détecté:', participant.pseudo);
-                                    createPeerConnection(participant.userId, 'speaker');
-                                }
-                                
-                                // Si je suis listener et qu'un speaker rejoint
-                                if (currentRole === 'listener' && (participant.role === 'host' || participant.role === 'speaker')) {
-                                    console.log('Nouveau speaker détecté:', participant.pseudo);
-                                    createPeerConnection(participant.userId, 'listener');
-                                }
-                            }
-                        }
-                    });
-                });
-
-            // Écouter les commentaires
-            const commentsUnsubscribe = db.collection('lives').doc(liveId).collection('comments')
-                .orderBy('timestamp', 'desc')
-                .limit(50)
-                .onSnapshot(snapshot => {
-                    updateCommentsList(snapshot);
-                });
-
-            // Écouter les changements du live
-            const liveUnsubscribe = db.collection('lives').doc(liveId)
-                .onSnapshot(doc => {
-                    const liveData = doc.data();
-                    document.getElementById('hearts-total').textContent = liveData.totalHearts || 0;
-                    document.getElementById('participants-count').textContent = liveData.currentListeners || 0;
-                    document.getElementById('viewer-count').textContent = liveData.currentListeners || 0;
-                    
-                    if (liveData.status === 'live') {
-                        document.getElementById('live-status-badge').classList.remove('hidden');
-                    }
-                    
-                    if (liveData.status === 'ended') {
-                        alert('Le live est terminé');
-                        leaveLive();
-                    }
-                });
-
-            unsubscribers.push(signalsUnsubscribe, participantsUnsubscribe, commentsUnsubscribe, liveUnsubscribe);
-        }
-
-        async function handleSignal(signal, signalId) {
-            const { from, type, sdp, candidate } = signal;
-
-            let pc = peerConnections[from];
-
-            if (type === 'offer') {
-                if (!pc) {
-                    pc = new RTCPeerConnection(rtcConfig);
-                    peerConnections[from] = pc;
-
-                    // SPEAKER envoie son audio
-                    if ((currentRole === 'host' || currentRole === 'speaker') && localStream) {
-                        localStream.getTracks().forEach(track => {
-                            pc.addTrack(track, localStream);
-                        });
-                    }
-
-                    // LISTENER reçoit l'audio
-                    pc.ontrack = (event) => {
-                        console.log('Stream reçu de', from);
-                        remoteStreams[from] = event.streams[0];
-                        playRemoteAudio(event.streams[0], from);
-                    };
-
-                    pc.onicecandidate = (event) => {
-                        if (event.candidate) {
-                            db.collection('lives').doc(currentLiveId).collection('signals').add({
-                                from: currentUser.uid,
-                                to: from,
-                                type: 'ice-candidate',
-                                candidate: event.candidate.toJSON(),
-                                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                        }
-                    };
-
-                    pc.onconnectionstatechange = () => {
-                        updateConnectionStatus();
-                    };
-                }
-
-                await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-                const answer = await pc.createAnswer();
-                await pc.setLocalDescription(answer);
-
-                await db.collection('lives').doc(currentLiveId).collection('signals').add({
-                    from: currentUser.uid,
-                    to: from,
-                    type: 'answer',
-                    sdp: answer,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-            } else if (type === 'answer') {
-                if (pc) {
-                    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-                }
-            } else if (type === 'ice-candidate') {
-                if (pc && candidate) {
-                    await pc.addIceCandidate(new RTCIceCandidate(candidate));
-                }
-            }
-
-            // Supprimer le signal après traitement
-            db.collection('lives').doc(currentLiveId).collection('signals').doc(signalId).delete().catch(e => {});
-        }
-
-        // ============================================
-        // PARTICIPANTS
-        // ============================================
-        function updateParticipantsList(snapshot) {
-            const container = document.getElementById('participants-list');
-            const handRaisedContainer = document.getElementById('hand-raised-list');
-            
-            container.innerHTML = '';
-            handRaisedContainer.innerHTML = '';
-
-            const participants = [];
-            const handsRaised = [];
-
-            snapshot.forEach(doc => {
-                const participant = doc.data();
-                participants.push(participant);
-
-                if (participant.handRaised && currentRole === 'host') {
-                    handsRaised.push(participant);
-                }
-            });
-
-            // Afficher participants
-            participants.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'participant-item';
-                
-                let roleIcon = '';
-                if (p.role === 'host') roleIcon = '👑';
-                else if (p.role === 'speaker') roleIcon = '🎤';
-                else roleIcon = '👤';
-
-                div.innerHTML = `
-                    <span>${roleIcon} ${p.pseudo}</span>
-                    ${p.handRaised ? '<span class="hand-raised">✋</span>' : ''}
-                `;
-                
-                container.appendChild(div);
-            });
-
-            // Afficher mains levées pour l'hôte
-            if (currentRole === 'host' && handsRaised.length > 0) {
-                handsRaised.forEach(p => {
-                    const div = document.createElement('div');
-                    div.style.padding = '10px';
-                    div.style.borderBottom = '1px solid #e2e8f0';
-                    div.innerHTML = `
-                        <p style="margin-bottom: 8px;">✋ ${p.pseudo} demande la parole</p>
-                        <button class="btn btn-success" style="margin-right: 5px;" onclick="acceptSpeaker('${p.userId}')">Accepter</button>
-                        <button class="btn btn-danger" onclick="rejectHand('${p.userId}')">Refuser</button>
-                    `;
-                    handRaisedContainer.appendChild(div);
-                });
-            }
-        }
-
-        window.acceptSpeaker = async function(userId) {
-            await db.collection('lives').doc(currentLiveId).collection('participants').doc(userId).update({
-                role: 'speaker',
-                handRaised: false
-            });
-
-            await db.collection('lives').doc(currentLiveId).update({
-                currentSpeakers: firebase.firestore.FieldValue.arrayUnion(userId)
-            });
-        };
-
-        window.rejectHand = async function(userId) {
-            await db.collection('lives').doc(currentLiveId).collection('participants').doc(userId).update({
-                handRaised: false
-            });
-        };
-
-        // ============================================
-        // COMMENTS
-        // ============================================
-        function updateCommentsList(snapshot) {
-            const container = document.getElementById('comments-list');
-            container.innerHTML = '';
-
-            snapshot.forEach(doc => {
-                const comment = doc.data();
-                const div = document.createElement('div');
-                div.className = 'comment-item';
-                div.innerHTML = `
-                    <div class="comment-author">${comment.pseudo}</div>
-                    <div>${comment.text}</div>
-                `;
-                container.appendChild(div);
-            });
-
-            container.scrollTop = container.scrollHeight;
-        }
-
-        document.getElementById('send-comment-btn').addEventListener('click', async () => {
-            const input = document.getElementById('comment-input');
-            const text = input.value.trim();
-
-            if (!text) return;
-
-            const now = Date.now();
-            if (now - lastCommentTime < 3000) {
-                alert('Attends 3 secondes entre chaque commentaire');
-                return;
-            }
-
-            try {
-                const userDoc = await db.collection('users').doc(currentUser.uid).get();
-                const userData = userDoc.data();
-
-                await db.collection('lives').doc(currentLiveId).collection('comments').add({
-                    userId: currentUser.uid,
-                    pseudo: userData.pseudo,
-                    text: text,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                input.value = '';
-                lastCommentTime = now;
-
-            } catch (error) {
-                console.error('Erreur envoi commentaire:', error);
-            }
-        });
-
-        document.getElementById('comment-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                document.getElementById('send-comment-btn').click();
-            }
-        });
-
-        // ============================================
-        // HEARTS
-        // ============================================
-        document.getElementById('send-heart-btn').addEventListener('click', async () => {
-            const now = Date.now();
-            if (now - lastHeartTime < 1000) {
-                return;
-            }
-
-            try {
-                await db.collection('lives').doc(currentLiveId).update({
-                    totalHearts: firebase.firestore.FieldValue.increment(1)
-                });
-
-                lastHeartTime = now;
-
-                const btn = document.getElementById('send-heart-btn');
-                btn.style.transform = 'scale(1.2)';
-                setTimeout(() => btn.style.transform = 'scale(1)', 200);
-
-            } catch (error) {
-                console.error('Erreur envoi heart:', error);
-            }
-        });
-
-        // ============================================
-        // CONTROLS
-        // ============================================
-        
-        
-                    document.getElementById('start-live-btn').addEventListener('click', async () => {
-            try {
-                await db.collection('lives').doc(currentLiveId).update({
-                    status: 'live',
-                    startedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                document.getElementById('start-live-btn').classList.add('hidden');
-                document.getElementById('audio-status').textContent = '🔴 EN DIRECT';
-                document.getElementById('audio-icon').textContent = '🔴';
-                document.getElementById('live-status-badge').classList.remove('hidden');
-
-            } catch (error) {
-                console.error('Erreur démarrage live:', error);
-            }
-        });
-
-        let isMuted = false;
-        document.getElementById('toggle-mic-btn').addEventListener('click', () => {
-            if (!localStream) return;
-
-            isMuted = !isMuted;
-            localStream.getAudioTracks().forEach(track => {
-                track.enabled = !isMuted;
-            });
-
-            document.getElementById('toggle-mic-btn').textContent = isMuted ? '🔇 Unmute' : '🎤 Mute';
-            document.getElementById('audio-icon').textContent = isMuted ? '🔇' : '🎤';
-        });
-
-        document.getElementById('raise-hand-btn').addEventListener('click', async () => {
-            try {
-                const participantDoc = await db.collection('lives').doc(currentLiveId)
-                    .collection('participants').doc(currentUser.uid).get();
-                
-                const currentHandRaised = participantDoc.data().handRaised;
-
-                await db.collection('lives').doc(currentLiveId)
-                    .collection('participants').doc(currentUser.uid).update({
-                        handRaised: !currentHandRaised
-                    });
-
-                document.getElementById('raise-hand-btn').textContent = 
-                    !currentHandRaised ? '✋ Main levée' : '✋ Demander la parole';
-
-            } catch (error) {
-                console.error('Erreur lever main:', error);
-            }
-        });
-
-        document.getElementById('leave-live-btn').addEventListener('click', () => {
-            if (confirm('Quitter le live ?')) {
-                leaveLive();
-            }
-        });
-
-        async function leaveLive() {
-            try {
-                Object.values(peerConnections).forEach(pc => pc.close());
-                peerConnections = {};
-
-                if (localStream) {
-                    localStream.getTracks().forEach(track => track.stop());
-                    localStream = null;
-                }
-
-                Object.keys(remoteStreams).forEach(userId => {
-                    const audio = document.getElementById(`audio-${userId}`);
-                    if (audio) audio.remove();
-                });
-                remoteStreams = {};
-
-                if (currentLiveId && currentUser) {
-                    await db.collection('lives').doc(currentLiveId)
-                        .collection('participants').doc(currentUser.uid).delete();
-
-                    await db.collection('lives').doc(currentLiveId).update({
-                        currentListeners: firebase.firestore.FieldValue.increment(-1)
-                    });
-
-                    if (currentRole === 'host') {
-                        await db.collection('lives').doc(currentLiveId).update({
-                            status: 'ended',
-                            endedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-                }
-
-                unsubscribers.forEach(unsub => unsub());
-                unsubscribers = [];
-
-                currentLiveId = null;
-                currentRole = null;
-
-                showScreen('home-screen');
-
-            } catch (error) {
-                console.error('Erreur leave live:', error);
-                showScreen('home-screen');
-            }
-        }
-
-        // ============================================
-        // CONNECTION STATUS
-        // ============================================
-        function updateConnectionStatus() {
-            const statusDiv = document.getElementById('connection-status');
-            const connectedPeers = Object.values(peerConnections).filter(
-                pc => pc.connectionState === 'connected'
-            ).length;
-
-            if (connectedPeers > 0) {
-                statusDiv.className = 'status-online';
-                statusDiv.textContent = `🟢 ${connectedPeers} connexion(s)`;
-                statusDiv.classList.remove('hidden');
-            } else if (Object.keys(peerConnections).length > 0) {
-                statusDiv.className = 'status-offline';
-                statusDiv.textContent = '🟡 Connexion...';
-                statusDiv.classList.remove('hidden');
-            } else {
-                statusDiv.classList.add('hidden');
-            }
-        }
-
-        // ============================================
-        // MEDIA SESSION API
-        // ============================================
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: 'SIS Live Audio',
-                artist: 'Say It Safely',
-                artwork: [
-                    { src: 'https://via.placeholder.com/512', sizes: '512x512', type: 'image/png' }
-                ]
-            });
-        }
-
-        // ============================================
-        // CLEANUP
-        // ============================================
-        window.addEventListener('beforeunload', () => {
-            if (currentLiveId) {
-                leaveLive();
-            }
-        });
-
-        console.log('🎙️ SIS initialized - Live Audio System Ready');
-    </script>
-</body>
-</html>
+          
